@@ -4,15 +4,25 @@ const errorMessage = document.getElementById('error-message');
 const filesBody = document.getElementById('files-body');
 const filesTable = document.getElementById('files-table');
 
+function normalizeFile(file) {
+  // Accept both backend-normalized and raw MYOB fields
+  return {
+    id: file.id || file.Id,
+    name: file.name || file.Name,
+  };
+}
+
 async function loadCompanyFiles() {
   try {
+    if (!errorMessage || !loader || !filesBody) return;
     errorMessage.textContent = "";
     loader.style.display = "block";
     filesBody.innerHTML = "<tr><td colspan='3'>Loading company files...</td></tr>";
     
     const response = await fetch('/company-files');
     if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.statusText}`);
+      const errText = await response.text();
+      throw new Error(`Network response was not ok: ${response.statusText} - ${errText}`);
     }
     const data = await response.json();
     console.log("Data received:", data);
@@ -20,15 +30,18 @@ async function loadCompanyFiles() {
     filesBody.innerHTML = "";
     
     if (data && Array.isArray(data) && data.length > 0) {
-      const thead = filesTable.querySelector('thead');
-      thead.innerHTML = `
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Actions</th>
-        </tr>
-      `;
-      data.forEach(file => {
+      const thead = filesTable && filesTable.querySelector ? filesTable.querySelector('thead') : null;
+      if (thead) {
+        thead.innerHTML = `
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Actions</th>
+          </tr>
+        `;
+      }
+      data.forEach(fileRaw => {
+        const file = normalizeFile(fileRaw);
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${file.id || 'N/A'}</td>
@@ -42,11 +55,13 @@ async function loadCompanyFiles() {
     }
   } catch (error) {
     console.error('Error fetching company files:', error);
-    loader.style.display = "none";
-    errorMessage.textContent = "Error loading company files.";
-    filesBody.innerHTML = `<tr><td colspan="3">Error loading company files.</td></tr>`;
+    if (loader) loader.style.display = "none";
+    if (errorMessage && filesBody) {
+      errorMessage.textContent = `Error loading company files: ${error.message}`;
+      filesBody.innerHTML = `<tr><td colspan="3">Error loading company files.</td></tr>`;
+    }
   }
 }
 
+if (refreshBtn) refreshBtn.addEventListener('click', loadCompanyFiles);
 document.addEventListener('DOMContentLoaded', loadCompanyFiles);
-refreshBtn.addEventListener('click', loadCompanyFiles);

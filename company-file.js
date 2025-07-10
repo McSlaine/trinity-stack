@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const progressBar = document.getElementById('progress-bar');
   const progressContainer = document.getElementById('progress-container');
 
+  // Null checks for all DOM elements
+  if (!companyNameEl || !errorMessage || !mainContent || !chatInterface || !syncStatusEl || !progressBar || !progressContainer) {
+    console.error('Missing required DOM elements.');
+    return;
+  }
+
   if (!companyId) {
     errorMessage.textContent = 'No company file ID provided.';
     return;
@@ -90,15 +96,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           const [companyDetails, invoices, bills] = await Promise.all([
               fetchLocalData(''), // Now fetches from /api/company-file/:id
               fetchLocalData('invoices'),
-              fetchLocalData('bills')
+              fetchLocalData('bills'),
           ]);
 
-          const currencyCode = companyDetails.country === 'AU' ? 'AUD' : 'USD';
+          // Fallback for missing/invalid country
+          let currencyCode = 'USD';
+          if (companyDetails.country === 'AU') currencyCode = 'AUD';
+          else if (companyDetails.country && companyDetails.country.length === 2) currencyCode = companyDetails.country;
+
           const formatCurrency = (amount) => {
               if (isNaN(amount)) {
                   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(0);
               }
-              return new Intl.NumberFormat(companyDetails.country === 'AU' ? 'en-AU' : 'en-US', { style: 'currency', currency: currencyCode }).format(amount);
+              return new Intl.NumberFormat(currencyCode === 'AUD' ? 'en-AU' : 'en-US', { style: 'currency', currency: currencyCode }).format(amount);
           };
 
           companyNameEl.textContent = companyDetails.name;
@@ -124,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             chatInterface.style.display = 'flex';
           }
 
-
       } catch (error) {
           console.error('Dashboard Error:', error);
           errorMessage.textContent = `Failed to load dashboard data: ${error.message}`;
@@ -136,7 +145,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     mainContent.style.display = 'none';
     chatInterface.style.display = 'none';
     progressContainer.style.display = 'block';
-
+    let retries = 0;
+    const maxRetries = 3;
     try {
       // 1. Start the sync
       await fetch(`/api/company-file/${companyId}/sync`, { method: 'POST' });
@@ -146,13 +156,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await fetch(`/api/company-file/${companyId}/sync-status`);
             if (!res.ok) {
-                // If the status endpoint itself fails, stop polling.
                 throw new Error(`Sync status check failed: ${res.statusText}`);
             }
             const status = await res.json();
 
             syncStatusEl.textContent = `Status: ${status.status}... (${status.processed_items} / ${status.total_items})`;
-            
             let progress = 0;
             if (status.total_items > 0) {
                 progress = (status.processed_items / status.total_items) * 100;
@@ -169,10 +177,12 @@ document.addEventListener('DOMContentLoaded', async () => {
               }
             }
         } catch (error) {
-            console.error('Polling Error:', error);
-            errorMessage.textContent = `An error occurred while checking sync status: ${error.message}`;
-            clearInterval(pollInterval); // Stop polling on error
-            progressContainer.style.display = 'none';
+            retries++;
+            if (retries > maxRetries) {
+              clearInterval(pollInterval); // Stop polling on error
+              progressContainer.style.display = 'none';
+              errorMessage.textContent = `An error occurred while checking sync status: ${error.message}`;
+            }
         }
       }, 2000); // Poll every 2 seconds
 

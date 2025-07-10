@@ -17,13 +17,22 @@ async function initTokenStore() {
 // Store the token data persistently.
 async function storeToken(tokenData) {
   // tokenData should include properties like access_token, refresh_token, expires_in, etc.
+  if (!tokenData || !tokenData.access_token || !tokenData.refresh_token) {
+    throw new Error('Invalid token data: missing access_token or refresh_token');
+  }
   await storage.setItem('myob_token', tokenData);
-  console.log('Token stored successfully');
+  if (process.env.TOKENSTORE_LOGGING === 'true') {
+    console.log('Token stored successfully');
+  }
 }
 
 // Retrieve the token data.
 async function getToken() {
-  return await storage.getItem('myob_token');
+  const token = await storage.getItem('myob_token');
+  if (!token || !token.access_token || !token.refresh_token) {
+    return null;
+  }
+  return token;
 }
 
 module.exports = { initTokenStore, storeToken, getToken };
