@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cashflow AI Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Cashflow AI Dashboard</h1>
+    <p>Welcome! Below is the list of your MYOB Company Files:</p>
+    <button id="refresh-btn">Refresh Data</button>
+  </header>
+  
+  <section id="content">
+    <div id="loader" class="loader"></div>
+    <table id="files-table">
+      <thead>
+      </thead>
+      <tbody id="files-body">
+        <tr>
+          <td colspan="3">Loading company files...</td>
+        </tr>
+      </tbody>
+    </table>
+    <div id="error-message" class="error"></div>
+  </section>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

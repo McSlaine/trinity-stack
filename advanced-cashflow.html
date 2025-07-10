@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Cash Flow Report</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+</head>
+<body>
+  <header>
+    <h1>Advanced Cash Flow Report</h1>
+    <a href="index.html" class="back-link">Back to Dashboard</a>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Select Date Range</h2>
+      <input type="text" id="daterange" name="daterange" value="" />
+      <button id="run-report-btn">Run Report</button>
+    </section>
+
+    <section class="card full-width">
+      <h2>Cash Flow Analysis</h2>
+      <div id="chart-loader" class="loader" style="display: none;"></div>
+      <canvas id="cashflow-chart"></canvas>
+    </section>
+  </main>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="advanced-cashflow.js"></script>
+</body>
+</html>

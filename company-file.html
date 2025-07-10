@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 id="company-name">Company Dashboard</h1>
+            <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to File List</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="progress-container" class="card" style="display: none;">
+            <h2 id="sync-status">Syncing data...</h2>
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div id="main-content" style="display: none;">
+            <div class="dashboard-grid">
+                <section class="card">
+                    <h2><i class="fas fa-file-invoice-dollar"></i> Outstanding Invoices</h2>
+                    <div class="table-meta">
+                        <span id="invoices-count"></span>
+                        <button id="show-all-invoices" class="show-all-btn" style="display: none;">Show All</button>
+                    </div>
+                    <p id="invoices-total" class="total-amount">Total: $0.00</p>
+                    <div id="outstanding-invoices" class="data-table"></div>
+                </section>
+
+                <section class="card">
+                    <h2><i class="fas fa-receipt"></i> Outstanding Bills</h2>
+                    <div class="table-meta">
+                        <span id="bills-count"></span>
+                        <button id="show-all-bills" class="show-all-btn" style="display: none;">Show All</button>
+                    </div>
+                    <p id="bills-total" class="total-amount">Total: $0.00</p>
+                    <div id="outstanding-bills" class="data-table"></div>
+                </section>
+            </div>
+        </div>
+
+        <section id="chat-interface" class="card full-width" style="display: none;">
+            <h2><i class="fas fa-robot"></i> AI Chat</h2>
+            <div id="chat-window"></div>
+            <div id="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Ask the AI for insights...">
+                <button id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="loader" class="loader" style="display: none;"></div>
+    <div id="error-message" class="error"></div>
+
+    <script src="company-file.js"></script>
+</body>
+</html>
