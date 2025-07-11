@@ -80,9 +80,10 @@ This plan outlines the architectural evolution from a simple proof-of-concept to
 ### Phase 3: Evolve the AI from "Chatbot" to "Strategic Advisor"
 -   **Goal:** Transform the AI from a simple Q&A tool into a proactive financial advisor.
 -   **Key Steps:**
-    1.  **Engineer Sophisticated Prompts:** Feed the AI summarized, structured data from our local database (P&L trends, cash flow summaries, key metrics).
-    2.  **Enable Complex Queries:** Allow the AI to answer strategic questions about profitability, forecasting, and customer behavior.
--   **Benefit:** Deliver on the core value proposition of the product: actionable, AI-driven business insights.
+    1.  **Integrate a VectorDB (e.g., Pinecone):** Convert structured financial data (P&L, cash flow trends, etc.) into vector embeddings and store them in a specialized vector database. This enables powerful semantic search capabilities.
+    2.  **Engineer Sophisticated Prompts:** Use the VectorDB to retrieve highly relevant data based on the user's natural language queries. Feed this context-rich data to the AI.
+    3.  **Enable Complex Queries:** Allow the AI to answer strategic questions about profitability, forecasting, and customer behavior by leveraging the semantic understanding of the financial data.
+-   **Benefit:** Deliver on the core value proposition: actionable, AI-driven business insights derived from a semantic understanding of the user's complete financial picture.
 
 ---
 
