@@ -1,13 +1,13 @@
 const { Pool } = require('pg');
 require('dotenv').config();
+const fs = require('fs');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    // Required for connections to some cloud-hosted PostgreSQL services (e.g., Heroku).
-    // In a self-hosted or more secure environment, this might need to be configured differently.
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false,
+    ca: fs.readFileSync('/home/cashflow-trends-ai/ca-certificate.crt').toString(),
+  },
 });
 
 const initDb = async () => {
