@@ -3,9 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Dashboard</title>
+    <title>Dashboard | Cashflow AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/company-dashboard.css">
+    <style>
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .card { display: flex; flex-direction: column; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-title { font-weight: bold; font-size: 1.1rem; }
+        .card-main-value { font-size: 2rem; font-weight: bold; margin: 5px 0; }
+        .card-sub-text { color: #6c757d; font-size: 0.9rem; }
+        .list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .list-item:last-child { border-bottom: none; }
+        .chart-placeholder { height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 4px; margin-top: 10px; }
+    </style>
 </head>
 <body>
     <header>
@@ -16,50 +27,80 @@
     </header>
 
     <main class="container">
+        <section id="chat-interface" class="card" style="display: none; margin-bottom: 20px;">
+            <h2><i class="fas fa-robot"></i> AI Chat</h2>
+            <div id="chat-window"></div>
+            <div id="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Ask for insights...">
+                <button id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
+            </div>
+        </section>
+
         <div id="progress-container" class="card" style="display: none;">
             <h2 id="sync-status">Syncing data...</h2>
-            <div class="progress-bar-container">
-                <div id="progress-bar"></div>
-            </div>
         </div>
 
         <div id="main-content" style="display: none;">
             <div class="dashboard-grid">
-                <section class="card">
-                    <h2><i class="fas fa-file-invoice-dollar"></i> Outstanding Invoices</h2>
-                    <div class="table-meta">
-                        <span id="invoices-count"></span>
-                        <button id="show-all-invoices" class="show-all-btn" style="display: none;">Show All</button>
-                    </div>
-                    <p id="invoices-total" class="total-amount">Total: $0.00</p>
-                    <div id="outstanding-invoices" class="data-table"></div>
-                </section>
+                <!-- Up Next -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Up next</p></div>
+                    <div class="list-item"><span>Overdue invoices</span> <span id="overdue-invoices-count">0</span></div>
+                    <div class="list-item"><span>Overdue bills</span> <span id="overdue-bills-count">0</span></div>
+                </div>
 
-                <section class="card">
-                    <h2><i class="fas fa-receipt"></i> Outstanding Bills</h2>
-                    <div class="table-meta">
-                        <span id="bills-count"></span>
-                        <button id="show-all-bills" class="show-all-btn" style="display: none;">Show All</button>
-                    </div>
-                    <p id="bills-total" class="total-amount">Total: $0.00</p>
-                    <div id="outstanding-bills" class="data-table"></div>
-                </section>
+                <!-- Your Business: Income -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Income</p></div>
+                    <p class="card-main-value" id="income-total">$0.00</p>
+                    <p class="card-sub-text">last 3 months</p>
+                    <div class="chart-placeholder">3-Month Chart</div>
+                </div>
+
+                <!-- Your Business: Expenses -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Expenses</p></div>
+                    <p class="card-main-value" id="expenses-total" style="color: #dc3545;">$0.00</p>
+                    <p class="card-sub-text">last 3 months</p>
+                    <div class="chart-placeholder">3-Month Chart</div>
+                </div>
+
+                <!-- Financial Position -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Financial position</p></div>
+                    <p class="card-main-value" id="net-profit-fy">$0.00</p>
+                    <p class="card-sub-text">this financial year</p>
+                    <div class="list-item"><span>Income</span><span id="income-fy">$0.00</span></div>
+                    <div class="list-item"><span>Expenses</span><span id="expenses-fy">$0.00</span></div>
+                </div>
+
+                <!-- Accounts -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Bank balance</p></div>
+                    <div id="bank-accounts-list"></div>
+                </div>
+
+                <!-- GST -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">GST</p></div>
+                    <p class="card-main-value" id="gst-to-pay">$0.00</p>
+                    <p class="card-sub-text">to pay</p>
+                    <div class="list-item"><span>GST collected</span> <span id="gst-collected">$0.00</span></div>
+                    <div class="list-item"><span>GST paid</span> <span id="gst-paid">$0.00</span></div>
+                </div>
+                
+                <!-- Overdue Invoices -->
+                <div class="card">
+                     <div class="card-header"><p class="card-title">Overdue Invoices</p></div>
+                     <p class="card-main-value" id="overdue-invoices-total">$0.00</p>
+                     <p class="card-sub-text">total overdue</p>
+                     <div class="chart-placeholder">Overdue Breakdown Chart</div>
+                </div>
             </div>
         </div>
-
-        <section id="chat-interface" class="card full-width" style="display: none;">
-            <h2><i class="fas fa-robot"></i> AI Chat</h2>
-            <div id="chat-window"></div>
-            <div id="chat-input-container">
-                <input type="text" id="chat-input" placeholder="Ask the AI for insights...">
-                <button id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
-            </div>
-        </section>
     </main>
 
-    <div id="loader" class="loader" style="display: none;"></div>
     <div id="error-message" class="error"></div>
-
     <script src="company-file.js"></script>
 </body>
 </html>
