@@ -12,12 +12,12 @@
 4.  **Database Connection Issues:** The database connection was suspected, but a direct test proved it was working correctly.
 5.  **SQL Query Errors:** The SQL queries in the `dashboard-summary` endpoint were suspected, but detailed logging did not reveal any obvious errors.
 6.  **Race Conditions:** The frontend logic was refactored multiple times to handle potential race conditions where data was being requested before the sync was complete.
+7.  **Fake Data Seeding:** The database was seeded with fake data to isolate the frontend, but the page still did not load correctly, indicating a fundamental issue in the frontend rendering logic.
 
 **Current Status:**
 
-*   The backend has been refactored to fetch the P&L report directly in the `dashboard-summary` endpoint to ensure it is always available.
-*   The frontend has been made more robust with detailed error handling and data validation.
-*   Despite these changes, the page is still not loading correctly.
+*   All changes made during the debugging session have been reverted to restore the application to its last known stable state.
+*   The root cause appears to be a subtle logic error in `company-file.js` that prevents it from correctly rendering the data, even when the data is present.
 
 **Recommendation:**
 
