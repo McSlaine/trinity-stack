@@ -50,47 +50,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderPnl(pnlData) {
-        if (!pnlData || pnlData.length === 0) {
+        if (!pnlData || !pnlData.AccountsBreakdown || pnlData.AccountsBreakdown.length === 0) {
             console.log('No P&L data to render.');
             return;
         }
         console.log('Rendering P&L with data:', pnlData);
 
         const findValue = (name) => {
-            const section = pnlData.find(s => s.Title === name);
-            return section ? section.Amount : 0;
+            const account = pnlData.AccountsBreakdown.find(a => a.Account.Name === name);
+            return account ? account.AccountTotal : 0;
         };
 
-        setText('pnl-income', formatCurrency(findValue('Total Income')));
-        setText('pnl-cost-of-sales', formatCurrency(findValue('Total Cost of Sales')));
-        setText('pnl-gross-profit', formatCurrency(findValue('Gross Profit')));
-        setText('pnl-net-profit', formatCurrency(findValue('Net Profit/(Loss)')));
+        // This is a simplified example. A real implementation would need to sum up accounts
+        // based on their category (Income, Cost of Sales, Expense) from the Chart of Accounts.
+        const totalIncome = findValue('Customer Sales') + findValue('Rental Income') + findValue('Freight Collected');
+        const costOfSales = findValue('Goods Purchased');
+        const grossProfit = totalIncome - costOfSales;
+        
+        // A more accurate Net Profit would be to take the value from the report if available
+        const netProfitSection = pnlData.AccountsBreakdown.find(a => a.Account.Name === 'Net Profit/(Loss)');
+        const netProfit = netProfitSection ? netProfitSection.AccountTotal : pnlData.AccountsBreakdown.reduce((acc, item) => acc + item.AccountTotal, 0);
+
+
+        setText('pnl-income', formatCurrency(totalIncome));
+        setText('pnl-cost-of-sales', formatCurrency(costOfSales));
+        setText('pnl-gross-profit', formatCurrency(grossProfit));
+        setText('pnl-net-profit', formatCurrency(netProfit));
     }
 
     // --- Main Logic ---
     async function loadDashboard() {
         try {
-            console.log('--- Starting Dashboard Load ---');
-            
-            const statusRes = await fetch(`/api/company-file/${companyId}/sync-status`);
-            let statusData = await statusRes.json();
-            console.log('Initial sync status:', statusData);
+            // This function is now only called by the button
+            const syncResponse = await fetch(`/api/company-file/${companyId}/sync`, { method: 'POST' });
 
-            if (statusData.status === 'Syncing' || statusData.status === 'Starting') {
-                console.log('Sync in progress, starting to poll...');
+            if (syncResponse.status === 202) {
+                syncStatusEl.textContent = 'Syncing data...';
                 await pollForSyncCompletion();
-                console.log('Polling complete.');
-            } else {
-                console.log('No sync in progress, attempting to trigger a new one.');
-                const syncResponse = await fetch(`/api/company-file/${companyId}/sync`, { method: 'POST' });
-                if (syncResponse.status === 202) {
-                    console.log('New sync triggered, starting to poll...');
-                    await pollForSyncCompletion();
-                    console.log('Polling complete.');
-                }
+            } else if (syncResponse.status !== 200) {
+                // This case handles if the sync is already up-to-date
+                console.log('Data is already fresh, or an issue occurred starting sync.');
             }
             
-            console.log('--- Fetching data for dashboard ---');
             const [companyDetailsRes, dashboardDataRes] = await Promise.all([
                 fetch(`/api/company-file/${companyId}`),
                 fetch(`/api/company-file/${companyId}/dashboard-summary`)
@@ -103,61 +104,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const companyDetails = await companyDetailsRes.json();
             const dashboardData = await dashboardDataRes.json();
             
-            console.log('--- Data fetched successfully ---');
-            console.log('Company Details:', companyDetails);
-            console.log('Dashboard Summary:', dashboardData);
-
             companyNameEl.textContent = companyDetails.name || 'Company Dashboard';
             
-            console.log('--- Rendering dashboard ---');
             renderDashboard(dashboardData);
             renderPnl(dashboardData.pnl);
-            console.log('--- Dashboard rendered ---');
 
+            // Show the content and hide progress
+            progressContainer.style.display = 'none';
             mainContent.style.display = 'block';
             chatInterface.style.display = 'block';
 
         } catch (error) {
             console.error('Dashboard Error:', error);
             errorMessage.textContent = `Error loading dashboard: ${error.message}`;
-        } finally {
-            progressContainer.style.display = 'none';
+            progressContainer.style.display = 'none'; // Hide progress on error too
         }
     }
-    
-    async function pollForSyncCompletion() {
-        return new Promise((resolve, reject) => {
-            let pollCount = 0;
-            const maxPolls = 30; // 1 minute timeout
-            const pollInterval = setInterval(async () => {
-                pollCount++;
-                if (pollCount > maxPolls) {
-                    clearInterval(pollInterval);
-                    return reject(new Error('Sync timed out.'));
-                }
-
-                try {
-                    const res = await fetch(`/api/company-file/${companyId}/sync-status`);
-                    if (!res.ok) return; // Silently ignore failed poll and retry
-                    
-                    const status = await res.json();
-                    syncStatusEl.textContent = `Syncing... ${status.processed_items || 0} of ${status.total_items || 0} items.`;
-
-                    if (status.status === 'Completed' || status.status === 'Completed with errors') {
-                        clearInterval(pollInterval);
-                        resolve();
-                    } else if (status.status === 'Failed') {
-                        clearInterval(pollInterval);
-                        reject(new Error('Data synchronization failed.'));
-                    }
-                } catch (error) {
-                    // Ignore fetch error and retry
-                }
-            }, 2000);
-        });
-    }
-
-    loadDashboard();
     
     // --- Chat Logic ---
     // ... (chat logic remains the same)
