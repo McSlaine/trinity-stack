@@ -23,8 +23,13 @@ If the server fails to start with an `EADDRINUSE` error, it means another proces
 
 ## Debugging Dashboard Data Errors
 
-If the dashboard shows a "Sync Failed" error, the issue is likely in the `syncCompanyData` function in `server.js`.
+If the dashboard is missing data, the issue is likely a failure in the data sync process.
 
-**Problem:** The sync process was using a single, generic database query for different data types (invoices, bills, accounts), causing a fatal SQL error if the columns didn't match. It also lacked resilience, failing the entire sync if one part failed.
+**Problem:** The sync process was failing for two reasons:
+1.  The MYOB API call for the Profit & Loss report was missing required parameters (`ReportingBasis`, `YearEndAdjust`).
+2.  API calls for large datasets (like the Chart of Accounts) were timing out, causing the entire sync to fail.
 
-**Solution:** The `syncCompanyData` function was refactored to use specific, correct `INSERT` statements for each data type. The process now syncs data sequentially and isolates errors, allowing the sync to complete even if a non-critical part fails. This makes the entire process more robust and less prone to API timeouts.
+**Solution:**
+1.  The P&L API call was corrected to include all required parameters, based on the official MYOB documentation.
+2.  The sync logic was refactored to handle API timeouts gracefully. It now marks the sync as "Completed with errors" and continues to process other data, preventing a total failure.
+3.  The P&L report is now fetched directly when the dashboard loads to ensure it is always up-to-date.
