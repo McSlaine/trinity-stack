@@ -23,8 +23,8 @@ If the server fails to start with an `EADDRINUSE` error, it means another proces
 
 ## Debugging Dashboard Data Errors
 
-If the dashboard shows a "Failed to fetch dashboard data" error, the issue is likely in the `/api/company-file/:id/dashboard-summary` endpoint in `server.js`.
+If the dashboard shows a "Sync Failed" error, the issue is likely in the `syncCompanyData` function in `server.js`.
 
-**Problem:** A complex, multi-part SQL query was failing silently without logging the specific database error.
+**Problem:** The sync process was using a single, generic database query for different data types (invoices, bills, accounts), causing a fatal SQL error if the columns didn't match. It also lacked resilience, failing the entire sync if one part failed.
 
-**Solution:** The single complex query was refactored into several smaller, sequential `await` queries. This allows for better error isolation and logging, making it easier to pinpoint the exact point of failure in the future.
+**Solution:** The `syncCompanyData` function was refactored to use specific, correct `INSERT` statements for each data type. The process now syncs data sequentially and isolates errors, allowing the sync to complete even if a non-critical part fails. This makes the entire process more robust and less prone to API timeouts.

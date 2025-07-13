@@ -75,20 +75,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error('Failed to initiate data sync.');
             }
             
-            const [companyDetailsRes, dashboardDataRes] = await Promise.all([
+            const [companyDetailsRes, dashboardDataRes, pnlRes] = await Promise.all([
                 fetch(`/api/company-file/${companyId}`),
-                fetch(`/api/company-file/${companyId}/dashboard-summary`)
+                fetch(`/api/company-file/${companyId}/dashboard-summary`),
+                fetch(`/api/company-file/${companyId}/profit-and-loss`)
             ]);
 
-            if (!companyDetailsRes.ok || !dashboardDataRes.ok) {
+            if (!companyDetailsRes.ok || !dashboardDataRes.ok || !pnlRes.ok) {
                 throw new Error('Failed to fetch dashboard data from the server.');
             }
 
             const companyDetails = await companyDetailsRes.json();
             const dashboardData = await dashboardDataRes.json();
+            const pnlData = await pnlRes.json();
 
             companyNameEl.textContent = companyDetails.name || 'Company Dashboard';
             renderDashboard(dashboardData);
+            renderPnl(pnlData);
 
         } catch (error) {
             console.error('Dashboard Error:', error);
@@ -96,6 +99,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         } finally {
             progressContainer.style.display = 'none';
         }
+    }
+
+    function renderPnl(pnlData) {
+        if (!pnlData || pnlData.length === 0) return;
+        const latestReport = pnlData[0];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        setText('pnl-month', `${monthNames[latestReport.report_month - 1]} ${latestReport.report_year}`);
+
+        const findValue = (name) => {
+            const section = latestReport.raw_data.find(s => s.Title === name);
+            return section ? section.Amount : 0;
+        };
+
+        setText('pnl-income', formatCurrency(findValue('Total Income')));
+        setText('pnl-cost-of-sales', formatCurrency(findValue('Total Cost of Sales')));
+        setText('pnl-gross-profit', formatCurrency(findValue('Gross Profit')));
+        setText('pnl-net-profit', formatCurrency(findValue('Net Profit/(Loss)')));
     }
     
     async function pollForSyncCompletion() {

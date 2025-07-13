@@ -58,6 +58,41 @@ const initDb = async () => {
         processed_items INT,
         status VARCHAR(50)
       );
+
+      CREATE TABLE IF NOT EXISTS accounts (
+        uid UUID PRIMARY KEY,
+        company_file_id UUID REFERENCES company_files(id),
+        name VARCHAR(255),
+        display_id VARCHAR(50),
+        type VARCHAR(50),
+        classification VARCHAR(50),
+        current_balance DECIMAL(12, 2),
+        raw_data JSONB
+      );
+
+      CREATE TABLE IF NOT EXISTS customers (
+        uid UUID PRIMARY KEY,
+        company_file_id UUID REFERENCES company_files(id),
+        name VARCHAR(255),
+        raw_data JSONB
+      );
+
+      CREATE TABLE IF NOT EXISTS suppliers (
+        uid UUID PRIMARY KEY,
+        company_file_id UUID REFERENCES company_files(id),
+        name VARCHAR(255),
+        raw_data JSONB
+      );
+
+      CREATE TABLE IF NOT EXISTS profit_and_loss_reports (
+        id SERIAL PRIMARY KEY,
+        company_file_id UUID REFERENCES company_files(id),
+        report_year INT,
+        report_month INT,
+        raw_data JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(company_file_id, report_year, report_month)
+      );
     `);
 
     // Add country column to company_files if it doesn't exist
