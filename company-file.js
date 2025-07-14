@@ -87,9 +87,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             syncStatusEl.textContent = 'Loading dashboard data...';
 
             const [companyDetailsRes, dashboardDataRes, pnlRes] = await Promise.all([
-                fetch(`/api/company-file/${companyId}`),
-                fetch(`/api/company-file/${companyId}/dashboard-summary`),
-                fetch(`/api/company-file/${companyId}/profit-and-loss`)
+                fetch(`/api/company/${companyId}`),
+                fetch(`/api/company/${companyId}/dashboard-summary`),
+                fetch(`/api/company/${companyId}/profit-and-loss`)
             ]);
 
             if (!companyDetailsRes.ok || !dashboardDataRes.ok || !pnlRes.ok) {

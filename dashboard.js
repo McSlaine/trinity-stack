@@ -21,7 +21,7 @@ async function loadCompanyFiles() {
     loader.style.display = "block";
     filesBody.innerHTML = "<tr><td colspan='4'>Loading company files...</td></tr>";
     
-    const response = await fetch('/api/company-files');
+    const response = await fetch('/api/company/files');
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Network response was not ok: ${response.statusText} - ${errText}`);
