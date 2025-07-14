@@ -56,7 +56,8 @@ const initDb = async () => {
         company_file_id UUID PRIMARY KEY REFERENCES company_files(id),
         total_items INT,
         processed_items INT,
-        status VARCHAR(50)
+        status VARCHAR(50),
+        details TEXT
       );
 
       CREATE TABLE IF NOT EXISTS accounts (

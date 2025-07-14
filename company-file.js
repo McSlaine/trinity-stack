@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         console.log('Rendering dashboard with data:', data);
 
+        // --- THIS IS THE FIX ---
+        // The API returns numbers, not objects with a 'total' property for these fields.
         setText('overdue-invoices-count', data.overdue_invoices?.count || 0);
         setText('overdue-bills-count', data.overdue_bills?.count || 0);
         setText('income-total', formatCurrency(data.income_3m?.total));
@@ -81,46 +83,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Main Logic ---
     async function loadDashboard() {
         try {
-            // This function is now only called by the button
-            const syncResponse = await fetch(`/api/company-file/${companyId}/sync`, { method: 'POST' });
+            progressContainer.style.display = 'block';
+            syncStatusEl.textContent = 'Loading dashboard data...';
 
-            if (syncResponse.status === 202) {
-                syncStatusEl.textContent = 'Syncing data...';
-                await pollForSyncCompletion();
-            } else if (syncResponse.status !== 200) {
-                // This case handles if the sync is already up-to-date
-                console.log('Data is already fresh, or an issue occurred starting sync.');
-            }
-            
-            const [companyDetailsRes, dashboardDataRes] = await Promise.all([
+            const [companyDetailsRes, dashboardDataRes, pnlRes] = await Promise.all([
                 fetch(`/api/company-file/${companyId}`),
-                fetch(`/api/company-file/${companyId}/dashboard-summary`)
+                fetch(`/api/company-file/${companyId}/dashboard-summary`),
+                fetch(`/api/company-file/${companyId}/profit-and-loss`)
             ]);
 
-            if (!companyDetailsRes.ok || !dashboardDataRes.ok) {
-                throw new Error(`Failed to fetch data: CompanyDetails: ${companyDetailsRes.status}, Dashboard: ${dashboardDataRes.status}`);
+            if (!companyDetailsRes.ok || !dashboardDataRes.ok || !pnlRes.ok) {
+                throw new Error(`Failed to fetch required dashboard data from the server.`);
             }
 
             const companyDetails = await companyDetailsRes.json();
             const dashboardData = await dashboardDataRes.json();
-            
+            const pnlData = await pnlRes.json();
+
             companyNameEl.textContent = companyDetails.name || 'Company Dashboard';
             
             renderDashboard(dashboardData);
-            renderPnl(dashboardData.pnl);
+            renderPnl(pnlData);
 
-            // Show the content and hide progress
-            progressContainer.style.display = 'none';
             mainContent.style.display = 'block';
             chatInterface.style.display = 'block';
 
         } catch (error) {
             console.error('Dashboard Error:', error);
             errorMessage.textContent = `Error loading dashboard: ${error.message}`;
-            progressContainer.style.display = 'none'; // Hide progress on error too
+        } finally {
+            progressContainer.style.display = 'none';
         }
     }
-    
-    // --- Chat Logic ---
-    // ... (chat logic remains the same)
+
+    loadDashboard();
+    initializeChat(companyId); // Initialize chat with the specific company ID
 });

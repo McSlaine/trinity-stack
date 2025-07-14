@@ -17,16 +17,32 @@
     <div id="loader" class="loader"></div>
     <table id="files-table">
       <thead>
+      <th>Name</th>
+          <th>Actions</th>
+          <th>Sync Status</th>
+        </tr>
       </thead>
       <tbody id="files-body">
         <tr>
-          <td colspan="3">Loading company files...</td>
+          <td colspan="4">Loading company files...</td>
         </tr>
       </tbody>
     </table>
     <div id="error-message" class="error"></div>
   </section>
 
+  <section id="chat-interface" class="chat-container">
+    <h2>AI Assistant</h2>
+    <div id="chat-messages" class="chat-messages"></div>
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="chat-input" placeholder="Ask about your cashflow..." autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+    <div id="chat-loader" class="loader" style="display: none;"></div>
+    <div id="chat-error" class="error"></div>
+  </section>
+
+  <script src="chat.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

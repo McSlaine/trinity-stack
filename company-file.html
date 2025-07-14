@@ -27,20 +27,15 @@
     </header>
 
     <main class="container">
-        <div class="card" style="margin-bottom: 20px; text-align: center;">
-            <p>Click the button below to sync with MYOB and load your dashboard.</p>
-            <button id="sync-btn" style="padding: 15px; font-size: 1.2rem; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; max-width: 300px; margin: 10px auto;">
-                <i class="fas fa-sync-alt"></i> Sync & Load Dashboard
-            </button>
-        </div>
-
-        <section id="chat-interface" class="card" style="display: none; margin-bottom: 20px;">
-            <h2><i class="fas fa-robot"></i> AI Chat</h2>
-            <div id="chat-window"></div>
-            <div id="chat-input-container">
-                <input type="text" id="chat-input" placeholder="Ask for insights...">
-                <button id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
-            </div>
+        <section id="chat-interface" class="chat-container card" style="display: none; margin-bottom: 20px;">
+            <h2><i class="fas fa-robot"></i> AI Assistant</h2>
+            <div id="chat-messages" class="chat-messages"></div>
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="chat-input" placeholder="Ask about this company..." autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+            <div id="chat-loader" class="loader" style="display: none;"></div>
+            <div id="chat-error" class="error"></div>
         </section>
 
         <div id="progress-container" class="card" style="display: none;">
@@ -119,6 +114,7 @@
     </main>
 
     <div id="error-message" class="error"></div>
+    <script src="chat.js"></script>
     <script src="company-file.js"></script>
 </body>
 </html>

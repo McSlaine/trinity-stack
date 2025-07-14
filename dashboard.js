@@ -9,6 +9,8 @@ function normalizeFile(file) {
   return {
     id: file.id || file.Id,
     name: file.name || file.Name,
+    last_sync_status: file.last_sync_status || 'Never',
+    last_sync_timestamp: file.last_sync_timestamp
   };
 }
 
@@ -17,9 +19,9 @@ async function loadCompanyFiles() {
     if (!errorMessage || !loader || !filesBody) return;
     errorMessage.textContent = "";
     loader.style.display = "block";
-    filesBody.innerHTML = "<tr><td colspan='3'>Loading company files...</td></tr>";
+    filesBody.innerHTML = "<tr><td colspan='4'>Loading company files...</td></tr>";
     
-    const response = await fetch('/company-files');
+    const response = await fetch('/api/company-files');
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Network response was not ok: ${response.statusText} - ${errText}`);
@@ -34,8 +36,9 @@ async function loadCompanyFiles() {
       if (thead) {
         thead.innerHTML = `
           <tr>
-            <th>ID</th>
             <th>Name</th>
+            <th>Last Synced</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         `;
@@ -43,25 +46,98 @@ async function loadCompanyFiles() {
       data.forEach(fileRaw => {
         const file = normalizeFile(fileRaw);
         const tr = document.createElement('tr');
+        const lastSyncDate = file.last_sync_timestamp ? new Date(file.last_sync_timestamp).toLocaleString() : 'Never';
         tr.innerHTML = `
-          <td>${file.id || 'N/A'}</td>
           <td>${file.name || 'N/A'}</td>
-          <td>${file.id ? `<a href="/company-file.html?id=${file.id}" target="_blank">View File</a>` : 'N/A'}</td>
+          <td>${lastSyncDate}</td>
+          <td id="status-${file.id}">${file.last_sync_status}</td>
+          <td>
+            <a href="/company-file.html?id=${file.id}" target="_blank">View Dashboard</a>
+            <button id="sync-btn-${file.id}" class="sync-btn">Sync Now</button>
+          </td>
         `;
         filesBody.appendChild(tr);
+        
+        const syncBtn = document.getElementById(`sync-btn-${file.id}`);
+        if (syncBtn) {
+          syncBtn.addEventListener('click', () => startSync(file.id));
+        }
       });
     } else {
-      filesBody.innerHTML = `<tr><td colspan="3">No company files found.</td></tr>`;
+      filesBody.innerHTML = `<tr><td colspan="4">No company files found. <a href="/api/login">Login to MYOB</a></td></tr>`;
     }
   } catch (error) {
     console.error('Error fetching company files:', error);
     if (loader) loader.style.display = "none";
     if (errorMessage && filesBody) {
       errorMessage.textContent = `Error loading company files: ${error.message}`;
-      filesBody.innerHTML = `<tr><td colspan="3">Error loading company files.</td></tr>`;
+      filesBody.innerHTML = `<tr><td colspan="4">Error loading company files.</td></tr>`;
     }
   }
 }
 
+async function startSync(fileId) {
+    const statusCell = document.getElementById(`status-${fileId}`);
+    if (statusCell) {
+        statusCell.innerHTML = 'Syncing...';
+    }
+
+    try {
+        const response = await fetch(`/api/company-file/${fileId}/sync`, { method: 'POST' });
+        if (!response.ok) {
+            throw new Error('Failed to start sync.');
+        }
+        pollSyncStatus(fileId);
+    } catch (error) {
+        console.error('Error starting sync:', error);
+        if (statusCell) {
+            statusCell.innerHTML = '<span class="error">Sync failed</span>';
+        }
+    }
+}
+
+function pollSyncStatus(fileId) {
+    const statusCell = document.getElementById(`status-${fileId}`);
+    const interval = setInterval(async () => {
+        try {
+            const response = await fetch(`/api/company-file/${fileId}/sync-status`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server returned ${response.status}: ${errorText}`);
+            }
+            const data = await response.json();
+            if (statusCell) {
+                let statusText = data.status || 'Unknown';
+                if (data.details) {
+                    statusText += ` <span class="tooltip" title="${data.details}">(i)</span>`;
+                } else {
+                    statusText += ` (${data.processed_items || 0}/${data.total_items || 0})`;
+                }
+                statusCell.innerHTML = statusText;
+            }
+            if (data.status === 'Completed' || data.status === 'Completed with errors' || data.status === 'Failed') {
+                clearInterval(interval);
+                if (data.status === 'Failed') {
+                    statusCell.innerHTML = `<span class="error">Sync failed</span>`;
+                    if (data.details) {
+                         statusCell.innerHTML += ` <span class="tooltip" title="${data.details}">(i)</span>`;
+                    }
+                } else {
+                    statusCell.textContent = 'Sync Complete';
+                }
+            }
+        } catch (error) {
+            clearInterval(interval);
+            console.error('Error polling sync status:', error);
+            if (statusCell) {
+                statusCell.innerHTML = '<span class="error">Polling failed</span>';
+            }
+        }
+    }, 2000);
+}
+
 if (refreshBtn) refreshBtn.addEventListener('click', loadCompanyFiles);
-document.addEventListener('DOMContentLoaded', loadCompanyFiles);
+document.addEventListener('DOMContentLoaded', () => {
+    loadCompanyFiles();
+    initializeChat(); // Initialize chat for the general dashboard
+});
