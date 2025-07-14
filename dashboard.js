@@ -83,7 +83,7 @@ async function startSync(fileId) {
     }
 
     try {
-        const response = await fetch(`/api/company-file/${fileId}/sync`, { method: 'POST' });
+        const response = await fetch(`/api/sync/${fileId}`, { method: 'POST' });
         if (!response.ok) {
             throw new Error('Failed to start sync.');
         }
@@ -100,7 +100,7 @@ function pollSyncStatus(fileId) {
     const statusCell = document.getElementById(`status-${fileId}`);
     const interval = setInterval(async () => {
         try {
-            const response = await fetch(`/api/company-file/${fileId}/sync-status`);
+            const response = await fetch(`/api/sync/status/${fileId}`);
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Server returned ${response.status}: ${errorText}`);
