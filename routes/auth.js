@@ -6,7 +6,8 @@ const asyncHandler = require('../middleware/asyncHandler');
 
 const router = express.Router();
 
-const { MYOB_CLIENT_ID, MYOB_CLIENT_SECRET, MYOB_REDIRECT_URI } = process.env;
+const MYOB_CLIENT_ID = process.env.MYOB_CLIENT_ID.trim();
+const { MYOB_CLIENT_SECRET, MYOB_REDIRECT_URI } = process.env;
 const AUTH_URL = 'https://secure.myob.com/oauth2/account/authorize';
 
 // Redirect user to MYOB for authentication

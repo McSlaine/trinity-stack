@@ -1,123 +1,116 @@
-const { Pool } = require('pg');
+// db.js
 require('dotenv').config();
-const fs = require('fs');
+const { Pool } = require('pg');
+
+if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL environment variable is not set.");
+}
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-    ca: fs.readFileSync('/home/cashflow-trends-ai/ca-certificate.crt').toString(),
-  },
+    connectionString: `${process.env.DATABASE_URL}`,
+    ssl: {
+        rejectUnauthorized: false,
+    }
 });
 
-const initDb = async () => {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    // Create tables if they don't exist
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS company_files (
-        id UUID PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        uri TEXT,
-        country VARCHAR(2),
-        last_sync_status VARCHAR(50) DEFAULT 'Never',
-        last_sync_timestamp TIMESTAMPTZ
-      );
-      
-      CREATE TABLE IF NOT EXISTS invoices (
-        uid UUID PRIMARY KEY,
-        company_file_id UUID REFERENCES company_files(id),
-        number VARCHAR(255),
-        date TIMESTAMPTZ,
-        customer_name VARCHAR(255),
-        balance_due_amount DECIMAL(12, 2),
-        status VARCHAR(50),
-        due_date TIMESTAMPTZ,
-        total_amount DECIMAL(12, 2),
-        raw_data JSONB
-      );
-
-      CREATE TABLE IF NOT EXISTS bills (
-        uid UUID PRIMARY KEY,
-        company_file_id UUID REFERENCES company_files(id),
-        number VARCHAR(255),
-        date TIMESTAMPTZ,
-        supplier_name VARCHAR(255),
-        balance_due_amount DECIMAL(12, 2),
-        status VARCHAR(50),
-        due_date TIMESTAMPTZ,
-        total_amount DECIMAL(12, 2),
-        raw_data JSONB
-      );
-
-      CREATE TABLE IF NOT EXISTS sync_progress (
-        company_file_id UUID PRIMARY KEY REFERENCES company_files(id),
-        total_items INT,
-        processed_items INT,
-        status VARCHAR(50),
-        details TEXT
-      );
-
-      CREATE TABLE IF NOT EXISTS accounts (
-        uid UUID PRIMARY KEY,
-        company_file_id UUID REFERENCES company_files(id),
-        name VARCHAR(255),
-        display_id VARCHAR(50),
-        type VARCHAR(50),
-        classification VARCHAR(50),
-        current_balance DECIMAL(12, 2),
-        raw_data JSONB
-      );
-
-      CREATE TABLE IF NOT EXISTS customers (
-        uid UUID PRIMARY KEY,
-        company_file_id UUID REFERENCES company_files(id),
-        name VARCHAR(255),
-        raw_data JSONB
-      );
-
-      CREATE TABLE IF NOT EXISTS suppliers (
-        uid UUID PRIMARY KEY,
-        company_file_id UUID REFERENCES company_files(id),
-        name VARCHAR(255),
-        raw_data JSONB
-      );
-
-      CREATE TABLE IF NOT EXISTS profit_and_loss_reports (
-        id SERIAL PRIMARY KEY,
-        company_file_id UUID REFERENCES company_files(id),
-        report_year INT,
-        report_month INT,
-        raw_data JSONB,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        UNIQUE(company_file_id, report_year, report_month)
-      );
-    `);
-
-    // Add country column to company_files if it doesn't exist
-    const res = await client.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name='company_files' AND column_name='country'
-    `);
-    if (res.rows.length === 0) {
-      await client.query('ALTER TABLE company_files ADD COLUMN country VARCHAR(2)');
+async function query(text, params) {
+    const client = await pool.connect();
+    try {
+        return await client.query(text, params);
+    } finally {
+        client.release();
     }
+}
 
-    await client.query('COMMIT');
-    console.log('Database tables initialized successfully.');
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Error initializing database tables:', err);
-    process.exit(1);
-  } finally {
-    client.release();
-  }
-};
+async function insertCompany(myob_uid, name) {
+    const text = `
+        INSERT INTO company_files (myob_uid, name)
+        VALUES ($1, $2)
+        ON CONFLICT (myob_uid) DO UPDATE SET name = EXCLUDED.name
+        RETURNING id;
+    `;
+    const res = await query(text, [myob_uid, name]);
+    return res.rows[0].id;
+}
 
-module.exports = {
-  pool,
-  initDb
-};
+/**
+ * Logs a general synchronization attempt.
+ * @param {number} companyId The ID of the company.
+ * @param {boolean} success Whether the sync was successful.
+ * @param {string} message A descriptive message.
+ * @param {number} vectorsInserted The number of vectors inserted during the sync.
+ */
+async function logSync(companyId, success, message, vectorsInserted = 0) {
+    const text = `
+        INSERT INTO sync_log (company_id, success, message, vectors_inserted)
+        VALUES ($1, $2, $3, $4);
+    `;
+    await query(text, [companyId, success, message, vectorsInserted]);
+    const updateText = `
+        UPDATE company_files SET last_synced = CURRENT_TIMESTAMP, error_msg = $1 WHERE id = $2;
+    `;
+    await query(updateText, [success ? null : message, companyId]);
+}
+
+async function logSyncError(companyId, stage, error_details) {
+    const message = `Sync failed at stage: ${stage}`;
+    const text = `
+        INSERT INTO sync_log (company_id, success, message, error_details)
+        VALUES ($1, false, $2, $3);
+    `;
+    await query(text, [companyId, message, error_details]);
+    const updateText = `
+        UPDATE company_files SET last_synced = CURRENT_TIMESTAMP, error_msg = $1 WHERE id = $2;
+    `;
+    await query(updateText, [message, companyId]);
+}
+
+async function insertInvoices(companyId, invoiceArray) {
+    if (!invoiceArray || invoiceArray.length === 0) return;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const text = `
+            INSERT INTO invoices (company_id, invoice_uid, date_issued, due_date, amount_total, amount_paid, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (invoice_uid) DO UPDATE SET
+                date_issued = EXCLUDED.date_issued,
+                due_date = EXCLUDED.due_date,
+                amount_total = EXCLUDED.amount_total,
+                amount_paid = EXCLUDED.amount_paid,
+                status = EXCLUDED.status;
+        `;
+        for (const invoice of invoiceArray) {
+            await client.query(text, [companyId, invoice.invoice_uid, invoice.date_issued, invoice.due_date, invoice.amount_total, invoice.amount_paid, invoice.status]);
+        }
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+async function insertBills(companyId, billArray) {
+    if (!billArray || billArray.length === 0) return;
+    // Placeholder
+}
+
+async function insertGST(companyId, gstArray) {
+    if (!gstArray || gstArray.length === 0) return;
+    // Placeholder
+}
+
+async function initDb() {
+    try {
+        const client = await pool.connect();
+        console.log('Database connected successfully.');
+        client.release();
+    } catch (err) {
+        console.error('Unable to connect to the database:', err);
+        throw err;
+    }
+}
+
+module.exports = { query, insertCompany, logSync, logSyncError, insertInvoices, insertBills, insertGST, initDb };
