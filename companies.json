@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "myob_uid": "comp-xyz-123",
+        "name": "Sample Test Company, Inc.",
+        "access_token": "dummy_access_token_123",
+        "tenant_id": "dummy_tenant_id_123"
+    },
+    {
+        "id": 2,
+        "myob_uid": "comp-abc-789",
+        "name": "Another Awesome Company LLC",
+        "access_token": "dummy_access_token_789",
+        "tenant_id": "dummy_tenant_id_789"
+    }
+]

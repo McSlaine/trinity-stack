@@ -3,13 +3,14 @@ const { query } = require('../db');
 const { makeMyobApiRequest } = require('../lib/myob');
 const asyncHandler = require('../middleware/asyncHandler');
 const { requireToken } = require('../middleware/tokenValidation');
+const { requireSessionAuth } = require('../middleware/sessionAuth');
 const { NotFoundError, BadRequestError } = require('../lib/errors');
 const querystring = require('querystring');
 
 const router = express.Router();
 
-// All routes in this file require a valid token
-router.use(requireToken);
+// Use session auth for browser requests
+router.use(requireSessionAuth);
 
 // Get all company files
 router.get('/files', asyncHandler(async (req, res, next) => {
@@ -71,14 +72,14 @@ router.get('/:id/dashboard-summary', asyncHandler(async (req, res) => {
     threeMonthsAgo.setMonth(today.getMonth() - 3);
 
     const queries = {
-        overdueInvoices: `SELECT COUNT(*)::int as count, SUM(balance_due_amount) as total FROM invoices WHERE company_file_id = $1 AND status = 'Open' AND balance_due_amount > 0 AND due_date < NOW()`,
-        overdueBills: `SELECT COUNT(*)::int as count, SUM(balance_due_amount) as total FROM bills WHERE company_file_id = $1 AND status = 'Open' AND balance_due_amount > 0 AND due_date < NOW()`,
-        income3m: `SELECT SUM(total_amount) as total FROM invoices WHERE company_file_id = $1 AND date >= $2`,
-        expenses3m: `SELECT SUM(total_amount) as total FROM bills WHERE company_file_id = $1 AND date >= $2`,
-        incomeFy: `SELECT SUM(total_amount) as total FROM invoices WHERE company_file_id = $1 AND date >= $2`,
-        expensesFy: `SELECT SUM(total_amount) as total FROM bills WHERE company_file_id = $1 AND date >= $2`,
-        bankAccounts: `SELECT name, current_balance FROM accounts WHERE company_file_id = $1 AND type = 'Bank' ORDER BY name`,
-        gst: `SELECT SUM(CASE WHEN name ILIKE '%collected%' THEN current_balance ELSE 0 END) as collected, SUM(CASE WHEN name ILIKE '%paid%' THEN current_balance ELSE 0 END) as paid FROM accounts WHERE company_file_id = $1 AND classification = 'Liability' AND name ILIKE '%gst%'`
+        overdueInvoices: `SELECT COUNT(*)::int as count, COALESCE(SUM(COALESCE(balance_due_amount, amount_total - amount_paid)), 0) as total FROM invoices WHERE company_id = $1 AND due_date < NOW() AND COALESCE(balance_due_amount, amount_total - amount_paid) > 0`,
+        overdueBills: `SELECT COUNT(*)::int as count, COALESCE(SUM(COALESCE(balance_due_amount, amount)), 0) as total FROM bills WHERE company_id = $1 AND due_date < NOW()`,
+        income3m: `SELECT COALESCE(SUM(amount_total), 0) as total FROM invoices WHERE company_id = $1 AND date_issued >= $2`,
+        expenses3m: `SELECT COALESCE(SUM(amount), 0) as total FROM bills WHERE company_id = $1 AND date_issued >= $2`,
+        incomeFy: `SELECT COALESCE(SUM(amount_total), 0) as total FROM invoices WHERE company_id = $1 AND date_issued >= $2`,
+        expensesFy: `SELECT COALESCE(SUM(amount), 0) as total FROM bills WHERE company_id = $1 AND date_issued >= $2`,
+        bankAccounts: `SELECT 'Main Account' as name, 0::numeric as current_balance WHERE $1 = $1`, // Placeholder query, accounts table not yet implemented
+        gst: `SELECT COALESCE(SUM(gst_collected), 0) as collected, COALESCE(SUM(gst_paid), 0) as paid, COALESCE(SUM(gst_collected) - SUM(gst_paid), 0) as to_pay FROM gst_activity WHERE company_id = $1`
     };
 
     const [

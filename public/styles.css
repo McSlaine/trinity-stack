@@ -1,0 +1,366 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f4f7fa;
+    color: #333;
+}
+
+h1 {
+    color: #2c3e50;
+}
+
+#company-details {
+    margin-bottom: 20px;
+}
+
+button, .sync-btn {
+    padding: 8px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover, .sync-btn:hover {
+    background-color: #2980b9;
+}
+
+button:disabled, .sync-btn:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+#error-message {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    width: 100%;
+    text-align: left;
+}
+
+.progress-status-text {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.progress-bar-wrapper {
+    width: 100%;
+    background-color: #ecf0f1;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    height: 22px;
+}
+
+.progress-bar-fill {
+    width: 0%;
+    height: 100%;
+    background-color: #2ecc71;
+    border-radius: 5px;
+    transition: width 0.4s ease-in-out;
+}
+
+.progress-bar-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #2c3e50;
+    font-weight: bold;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.progress-bar-fill.failed {
+    background-color: #e74c3c;
+}
+
+.progress-bar-fill.completed {
+    background-color: #3498db;
+}
+
+/* Chat Styles */
+.chat-container {
+    margin-bottom: 20px;
+}
+
+.chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+}
+
+.chat-message {
+    margin-bottom: 15px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.chat-message.user .message-content {
+    background-color: #0066cc;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 18px;
+    margin-left: auto;
+    max-width: 70%;
+    text-align: right;
+}
+
+.chat-message.assistant .message-content {
+    background-color: #e9ecef;
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 70%;
+}
+
+.chat-message i {
+    margin-right: 8px;
+}
+
+.chat-form {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-form input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 14px;
+}
+
+.chat-form button {
+    padding: 10px 25px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.chat-form button:hover {
+    background-color: #0052a3;
+}
+
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #0066cc;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sync Status Styles */
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.sync-button {
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sync-button:hover {
+    background-color: #0052a3;
+}
+
+.sync-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.sync-status-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 25px;
+}
+
+.sync-status-container h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sync-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.sync-metric {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.metric-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.metric-value {
+    font-weight: 700;
+    color: #333;
+}
+
+.status-in_progress,
+.status-in.progress {
+    color: #007bff;
+}
+
+.status-completed {
+    color: #28a745;
+}
+
+.status-failed {
+    color: #dc3545;
+}
+
+.sync-log {
+    margin-top: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.sync-log h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.log-entries {
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+
+.log-entry {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-time {
+    color: #999;
+    font-size: 12px;
+    min-width: 80px;
+}
+
+.log-message {
+    flex: 1;
+    color: #333;
+}
+
+.log-info .log-message {
+    color: #666;
+}
+
+.log-success .log-message {
+    color: #28a745;
+}
+
+.log-error .log-message {
+    color: #dc3545;
+}
+
+.sync-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sync-error i {
+    color: #dc3545;
+}
+
+/* Progress bar improvements */
+.progress-bar {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #007bff;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.progress-bar-fill.failed {
+    background-color: #dc3545;
+}
+
+/* Animate sync icon */
+.fa-sync {
+    transition: transform 0.3s ease;
+}
+
+.sync-button:hover .fa-sync {
+    transform: rotate(180deg);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.sync-status-container .fa-sync {
+    animation: spin 2s linear infinite;
+}

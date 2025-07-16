@@ -6,10 +6,17 @@ if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is not set.");
 }
 
+// Parse the DATABASE_URL to handle SSL properly
+let connectionString = process.env.DATABASE_URL;
+
+// Remove sslmode parameter from URL if present (we'll handle SSL in the config)
+connectionString = connectionString.replace(/\?sslmode=\w+/, '');
+
 const pool = new Pool({
-    connectionString: `${process.env.DATABASE_URL}`,
+    connectionString: connectionString,
     ssl: {
         rejectUnauthorized: false,
+        require: true
     }
 });
 

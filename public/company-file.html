@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Cashflow AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="css/company-dashboard.css">
+    <style>
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .card { display: flex; flex-direction: column; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-title { font-weight: bold; font-size: 1.1rem; }
+        .card-main-value { font-size: 2rem; font-weight: bold; margin: 5px 0; }
+        .card-sub-text { color: #6c757d; font-size: 0.9rem; }
+        .list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .list-item:last-child { border-bottom: none; }
+        .chart-placeholder { height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 4px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 id="company-name">Company Dashboard</h1>
+            <div class="header-actions">
+                <a href="/company-selection.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to File List</a>
+                <button id="sync-btn" class="sync-button"><i class="fas fa-sync"></i> Sync Now</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="chat-interface" class="chat-container card" style="display: none; margin-bottom: 20px;">
+            <h2><i class="fas fa-robot"></i> AI Assistant</h2>
+            <div id="chat-messages" class="chat-messages"></div>
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="chat-input" placeholder="Ask about this company..." autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+            <div id="chat-loader" class="loader" style="display: none;"></div>
+            <div id="chat-error" class="error"></div>
+        </section>
+
+        <div id="progress-container" style="display: none;">
+            <!-- Sync status will be dynamically inserted here -->
+        </div>
+
+        <div id="main-content" style="display: none;">
+            <div class="dashboard-grid">
+                <!-- Up Next -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Up next</p></div>
+                    <div class="list-item"><span>Overdue invoices</span> <span id="overdue-invoices-count">0</span></div>
+                    <div class="list-item"><span>Overdue bills</span> <span id="overdue-bills-count">0</span></div>
+                </div>
+
+                <!-- Your Business: Income -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Income</p></div>
+                    <p class="card-main-value" id="income-total">$0.00</p>
+                    <p class="card-sub-text">last 3 months</p>
+                    <div class="chart-placeholder">3-Month Chart</div>
+                </div>
+
+                <!-- Your Business: Expenses -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Expenses</p></div>
+                    <p class="card-main-value" id="expenses-total" style="color: #dc3545;">$0.00</p>
+                    <p class="card-sub-text">last 3 months</p>
+                    <div class="chart-placeholder">3-Month Chart</div>
+                </div>
+
+                <!-- Financial Position -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Financial position</p></div>
+                    <p class="card-main-value" id="net-profit-fy">$0.00</p>
+                    <p class="card-sub-text">this financial year</p>
+                    <div class="list-item"><span>Income</span><span id="income-fy">$0.00</span></div>
+                    <div class="list-item"><span>Expenses</span><span id="expenses-fy">$0.00</span></div>
+                </div>
+
+                <!-- Accounts -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Bank balance</p></div>
+                    <div id="bank-accounts-list"></div>
+                </div>
+
+                <!-- GST -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">GST</p></div>
+                    <p class="card-main-value" id="gst-to-pay">$0.00</p>
+                    <p class="card-sub-text">to pay</p>
+                    <div class="list-item"><span>GST collected</span> <span id="gst-collected">$0.00</span></div>
+                    <div class="list-item"><span>GST paid</span> <span id="gst-paid">$0.00</span></div>
+                </div>
+                
+                <!-- Overdue Invoices -->
+                <div class="card">
+                     <div class="card-header"><p class="card-title">Overdue Invoices</p></div>
+                     <p class="card-main-value" id="overdue-invoices-total">$0.00</p>
+                     <p class="card-sub-text">total overdue</p>
+                     <div class="chart-placeholder">Overdue Breakdown Chart</div>
+                </div>
+
+                <!-- Profit & Loss Summary -->
+                <div class="card">
+                    <div class="card-header"><p class="card-title">Profit & Loss</p> <span id="pnl-month" class="card-sub-text"></span></div>
+                    <div id="profit-loss-summary">
+                        <div class="list-item"><span>Total Income</span> <span id="pnl-income">$0.00</span></div>
+                        <div class="list-item"><span>Cost of Sales</span> <span id="pnl-cost-of-sales">$0.00</span></div>
+                        <div class="list-item"><strong>Gross Profit</strong> <strong id="pnl-gross-profit">$0.00</strong></div>
+                        <div class="list-item"><span>Net Profit</span> <span id="pnl-net-profit">$0.00</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="error-message" class="error"></div>
+    <script src="chat.js"></script>
+    <script src="sync-status.js"></script>
+    <script src="company-file.js"></script>
+</body>
+</html>

@@ -54,36 +54,97 @@ Business Model:
 
 - **Independent Testing:** I will proactively use `web_fetch` to gather information and test functionalities independently, especially when an active token is available. I will only request your input or intervention when it's essential for progress or verification.
 
-## Strategic Development Plan
+## Cashflow Trends AI – Strategic Development Plan (Enhanced Edition)
 
-This plan outlines the architectural evolution from a simple proof-of-concept to a robust, data-centric platform.
+This document outlines the architectural evolution from a proof-of-concept into a robust, multi-tenant financial intelligence platform with real-time sync and AI-driven insights.
 
-### Phase 1: Implement a Local Data Cache & Background Sync
--   **Goal:** Decouple the user experience from slow, on-demand API calls to MYOB. Create a scalable foundation for data analysis.
--   **Key Steps:**
-    1.  **Introduce a PostgreSQL Database:** Store a local copy of MYOB data (invoices, bills, etc.).
-    2.  **Asynchronous Syncing:** Create a background job to perform the initial, full data sync from MYOB when a user connects a company file.
-    3.  **Responsive UI:** Update the frontend to provide immediate feedback (e.g., "Syncing data...") and load instantly by querying the local database.
-    4.  **Ongoing Sync:** Implement a mechanism (webhooks or periodic polling) to keep the local database fresh.
--   **Benefit:** A fast, responsive application and a stable data source for the AI.
+---
 
-### Phase 2: Deepen the Financial Data Scope
--   **Goal:** Move beyond basic invoices and bills to enable true financial analysis.
--   **Key Steps:**
-    1.  Expand the data sync to include:
-        -   Chart of Accounts
-        -   Profit & Loss Statements
-        -   Balance Sheets
-        -   Customer & Supplier Data
--   **Benefit:** Provide the AI with the necessary context to generate strategic insights.
+## Phase 1: Local Data Cache & Background Sync ✅
 
-### Phase 3: Evolve the AI from "Chatbot" to "Strategic Advisor"
--   **Goal:** Transform the AI from a simple Q&A tool into a proactive financial advisor.
--   **Key Steps:**
-    1.  **Integrate a VectorDB (e.g., Pinecone):** Convert structured financial data (P&L, cash flow trends, etc.) into vector embeddings and store them in a specialized vector database. This enables powerful semantic search capabilities.
-    2.  **Engineer Sophisticated Prompts:** Use the VectorDB to retrieve highly relevant data based on the user's natural language queries. Feed this context-rich data to the AI.
-    3.  **Enable Complex Queries:** Allow the AI to answer strategic questions about profitability, forecasting, and customer behavior by leveraging the semantic understanding of the financial data.
--   **Benefit:** Deliver on the core value proposition: actionable, AI-driven business insights derived from a semantic understanding of the user's complete financial picture.
+**Goal:** Decouple UI from MYOB latency, enable scalable architecture for analysis.
+
+- [x] Local PostgreSQL mirror of MYOB data (invoices, bills, GST)
+- [x] REST API endpoints: `/sync/:companyId`, `/sync-status`, `/sync-log`
+- [x] Per-company sync isolation (resilient error handling)
+- [x] Timeout logic (Promise.race)
+- [x] Crash protection (uncaughtException, unhandledRejection)
+- [x] Sync diagnostics via `syncProgressMap`
+- [x] Error logging to `sync_log`
+- [ ] Pull 2 years of data on initial sync
+- [ ] Redis fallback demo data for new users while sync completes
+- [ ] Queue-based sync (RabbitMQ or similar) to handle load & rate limits
+- [ ] Serve default ABS-based industry templates in UI pre-sync
+- [ ] Display “sync in progress” state and estimated duration to user
+
+---
+
+## Phase 2: Deepen Financial Data Scope
+
+**Goal:** Expand local mirror with high-value datasets to support true financial intelligence.
+
+- [ ] Sync Chart of Accounts
+- [ ] Sync P&L Statements
+- [ ] Sync Balance Sheets
+- [ ] Sync Customer & Supplier records
+
+---
+
+## Phase 3: Semantic AI Advisor (Post-Sync)
+
+**Goal:** Transform AI into a contextual financial assistant.
+
+- [ ] Integrate Pinecone (or Weaviate) as VectorDB
+- [ ] Generate vector embeddings of financial data via Sentence Transformers
+- [ ] Semantic query engine with relevant retrieval + prompt injection
+- [ ] Enable strategic queries: forecasting, trends, anomaly detection
+- [ ] Build prompt-engineering layer to support cashflow logic tree
+
+---
+
+## Phase 4: Cost Optimisation & Monitoring
+
+**Goal:** Minimise cloud/API costs, add internal observability.
+
+- [ ] Redis cache for high-frequency queries (semantic + sync)
+- [ ] Claude/Grok/OpenAI hybrid query routing via LangChain rules
+- [ ] Batch nightly sync + embedding (lower cost)
+- [ ] Internal AI mentor: alerts for spikes, failed syncs, high costs
+- [ ] Cost dashboard (queries/user/API breakdowns)
+- [ ] Add disclaimers for seasonal outliers and AI advice boundaries
+
+---
+
+## Phase 5: Tooling Migration (Gemini CLI → Advanced AI Ops)
+
+**Goal:** Migrate away from Gemini CLI toward a multi-agent model.
+
+- [ ] Regenerate MYOB sync with Copilot/Claude for benchmarking
+- [ ] Update AI routing to support anomaly classification/escalation
+- [ ] Switch code completion tools (test accuracy and reliability)
+
+---
+
+## Phase 6: Marketing & Onboarding
+
+**Goal:** Build automated lead gen and guided onboarding.
+
+- [ ] Integrate ScoreApp or equivalent for onboarding quiz funnel
+- [ ] Auto-categorise company type post-sync using transaction analysis
+- [ ] Store guessed business type in `user_profile`
+- [ ] Personalise UI and AI prompts per industry
+- [ ] GDPR-compliant consent for analysis
+- [ ] Email signup/lead flow via Nodemailer + Scorecard webhook
+
+---
+
+## Scalability Forecast
+
+- PostgreSQL (DigitalOcean Managed): $500–$1000/month (100 users)
+- Pinecone (VectorDB): $10–$50/month
+- Claude/OpenAI API costs: $100–$300/month (post-routing)
+- Redis: $50/month (demo + cache)
+- Total Estimated Cost @100 users: ~$1,000–$1,500/month
 
 ---
 
@@ -348,3 +409,142 @@ Update this file whenever significant changes are made to the project structure 
 
 
 Ensure that the instructions remain relevant and accurate.
+
+## Debugging Principles
+
+- Never retry schema fixes if the same table/column has already been added.
+- Always check for the presence of columns using SELECT * FROM information_schema.columns...
+- Do not attempt sync unless all DB migrations are complete and schema is validated.
+- Use crash.log ONLY to identify new problems. Do not overwrite fixes without confirmation.
+
+
+
+## 📌 Project Name: Cashflow Trends AI
+
+### 🧠 Purpose
+Semantic financial analysis tool that syncs MYOB company file data into a PostgreSQL + Pinecone stack, allowing natural language queries about transactions, cashflow, bills, and GST status.
+
+---
+
+## ✅ Current System Overview
+
+### 🗃️ Backend Stack
+- Node.js server
+- PostgreSQL (via DigitalOcean Managed DB)
+- Pinecone Vector DB
+- MYOB API Integration
+- OpenAI GPT-4 API
+
+### 🖼️ Frontend Stack
+- Vanilla JS
+- Dashboard page served from server
+- AI Assistant input box for natural language query to `/vector-query/:companyId`
+
+---
+
+## 🔁 Sync Pipeline (sync.js)
+
+### Functionality
+- Fetches data from MYOB using `myobAdapter.js`
+- Inserts into `bills`, `invoices`, `gst_activity`, etc.
+- Pushes structured text + metadata to Pinecone with `pushToVectorDB()`
+
+### Expected Metadata in Pinecone Vectors
+- `type` (e.g., invoice, bill, payment)
+- `amount`
+- `status`
+- `date`
+- `original_text`
+
+---
+
+## 📡 API Endpoints
+
+### POST `/api/sync/:companyId`
+Triggers sync of MYOB data for given company file.
+
+### POST `/vector-query/:companyId`
+User enters query (e.g. "What are my top expenses?") → GPT turns it into embedding → Pinecone vector similarity → Top K matches returned.
+
+### ⚠️ MISSING: GET `/api/sync/status/:companyId`
+> Must be implemented. The Dashboard JS polls this endpoint for real-time sync status.
+
+Proposed implementation (Node.js):
+```js
+app.get('/api/sync/status/:companyFileId', async (req, res) => {
+  const { companyFileId } = req.params;
+  try {
+    const { rows } = await query('SELECT * FROM sync_progress WHERE company_file_id = $1', [companyFileId]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+```
+
+---
+
+## 🛠️ Known Bugs & Issues
+
+### 1. `initializeChat is not defined`
+- JS error in `dashboard.js:145`
+- Solution: Either define this dummy function:
+```js
+function initializeChat() { console.log("Chat placeholder"); }
+```
+or wire in actual chat module if implemented elsewhere.
+
+### 2. Vector DB empty (Pinecone)
+- No embeddings returned until sync works
+- Confirm `pushToVectorDB()` is called inside `syncCompany()`
+
+### 3. `company_files` table missing `uri` column
+- Already patched in `db.sql`:
+```sql
+ALTER TABLE company_files ADD COLUMN uri TEXT;
+```
+
+---
+
+## ✍️ Gemini Prompt Cheatsheet
+
+### ✅ To fix missing `/sync/status` endpoint:
+```
+Add a GET route `/api/sync/status/:companyFileId` that queries sync_progress by company_file_id and returns status JSON.
+```
+
+### ✅ To fix chat init crash:
+```
+Ensure initializeChat() is defined before calling it in dashboard.js:145.
+
+Sync Progress Bug � Resolved
+Issue:
+UI displayed sync status as (0/0) with no progress, even when backend processed records correctly.
+
+Cause:
+In lib/sync.js, the final UPDATE sync_progress query did not update processed_items and total_items.
+This caused the frontend to see zero values, wiping out any progress visually.
+
+Fix:
+Modified the final update to include:
+
+ 
+processed_items = total_items
+This ensures accurate display of sync completion in the UI.
+
+Updated query (in lib/sync.js):
+
+js
+ 
+await query(`
+  UPDATE sync_progress 
+  SET status = $1, 
+      processed_items = total_items, 
+      details = CASE WHEN $1 = 'Completed' THEN NULL ELSE details END 
+  WHERE company_file_id = $2
+`, [overallStatus, companyId]);
+Outcome:
+UI now reflects correct sync completion values. Issue closed.
+
