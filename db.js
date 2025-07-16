@@ -1,6 +1,7 @@
 // db.js
 require('dotenv').config();
 const { Pool } = require('pg');
+const fs = require('fs');
 
 if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is not set.");
@@ -9,14 +10,15 @@ if (!process.env.DATABASE_URL) {
 // Parse the DATABASE_URL to handle SSL properly
 let connectionString = process.env.DATABASE_URL;
 
-// Remove sslmode parameter from URL if present (we'll handle SSL in the config)
-connectionString = connectionString.replace(/\?sslmode=\w+/, '');
+// Remove sslmode and sslcert parameters from URL if present (we'll handle SSL in the config)
+connectionString = connectionString.replace(/\?.*$/, '');
 
 const pool = new Pool({
     connectionString: connectionString,
     ssl: {
-        rejectUnauthorized: false,
-        require: true
+        rejectUnauthorized: true,
+        require: true,
+        ca: fs.readFileSync('/home/cashflow-trends-ai/ca-certificate.crt').toString()
     }
 });
 
@@ -120,4 +122,4 @@ async function initDb() {
     }
 }
 
-module.exports = { query, insertCompany, logSync, logSyncError, insertInvoices, insertBills, insertGST, initDb };
+module.exports = { pool, query, insertCompany, logSync, logSyncError, insertInvoices, insertBills, insertGST, initDb };
