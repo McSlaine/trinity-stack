@@ -9,8 +9,8 @@ const router = express.Router();
 // Debug endpoint to check AI chat context data
 router.get('/chat-context/:companyId', asyncHandler(async (req, res, next) => {
     const { companyId } = req.params;
-    const { rows: invoices } = await pool.query('SELECT number, customer_name, balance_due_amount, due_date, status FROM invoices WHERE company_file_id = $1', [companyId]);
-    const { rows: bills } = await pool.query('SELECT number, supplier_name, balance_due_amount, due_date, status FROM bills WHERE company_file_id = $1', [companyId]);
+    const { rows: invoices } = await pool.query('SELECT number, customer_name, balance_due_amount, due_date, status FROM invoices WHERE company_id = $1', [companyId]);
+    const { rows: bills } = await pool.query('SELECT number, supplier_name, balance_due_amount, due_date, status FROM bills WHERE company_id = $1', [companyId]);
     res.json({ invoices, bills });
 }));
 
@@ -19,13 +19,11 @@ router.get('/db-check/:id', asyncHandler(async (req, res, next) => {
     const { id } = req.params;
     const client = await pool.connect();
     try {
-        const invoices = await client.query('SELECT COUNT(*) FROM invoices WHERE company_file_id = $1', [id]);
-        const bills = await client.query('SELECT COUNT(*) FROM bills WHERE company_file_id = $1', [id]);
-        const accounts = await client.query('SELECT COUNT(*) FROM accounts WHERE company_file_id = $1', [id]);
+        const invoices = await client.query('SELECT COUNT(*) FROM invoices WHERE company_id = $1', [id]);
+        const bills = await client.query('SELECT COUNT(*) FROM bills WHERE company_id = $1', [id]);
         res.json({
             invoices: invoices.rows[0].count,
             bills: bills.rows[0].count,
-            accounts: accounts.rows[0].count,
         });
     } finally {
         client.release();

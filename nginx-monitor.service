@@ -1,0 +1,16 @@
+[Unit]
+Description=Nginx Monitor and Auto-Recovery Service
+After=network.target nginx.service
+Wants=nginx.service
+
+[Service]
+Type=simple
+ExecStart=/home/cashflow-trends-ai/nginx-failsafe.sh monitor
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nginx-monitor
+
+[Install]
+WantedBy=multi-user.target 

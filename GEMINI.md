@@ -115,7 +115,7 @@ This document outlines the architectural evolution from a proof-of-concept into 
 
 ---
 
-## Phase 5: Tooling Migration (Gemini CLI â†’ Advanced AI Ops)
+## Phase 5: Tooling Migration (Gemini CLI ï¿½ï¿½ï¿½ Advanced AI Ops)
 
 **Goal:** Migrate away from Gemini CLI toward a multi-agent model.
 
@@ -519,7 +519,7 @@ Add a GET route `/api/sync/status/:companyFileId` that queries sync_progress by 
 ```
 Ensure initializeChat() is defined before calling it in dashboard.js:145.
 
-Sync Progress Bug – Resolved
+Sync Progress Bug ï¿½ Resolved
 Issue:
 UI displayed sync status as (0/0) with no progress, even when backend processed records correctly.
 
@@ -548,3 +548,15 @@ await query(`
 Outcome:
 UI now reflects correct sync completion values. Issue closed.
 
+---
+##  Debugging Protocol
+
+**Problem Summary:**
+- **Nginx is dead**: This is the root cause for HTTPS (port 443) connections failing.
+- **PM2 is running**: The Node.js application is managed by PM2 and works correctly on port 3000.
+- **Debugging Confusion**: Previous debugging attempts created confusion by using `npm` to manage processes instead of `pm2`.
+
+**Operational Rules:**
+1.  **Always use PM2**: The Node.js application must be managed with PM2 (`pm2 restart app_name`, `pm2 logs`, etc.).
+2.  **Do NOT use npm directly**: Avoid using `npm start` or `npm stop` as it conflicts with the PM2/Nginx setup.
+3.  **Check Nginx first**: If the `https://` URL is down, check the Nginx service status (`systemctl status nginx`) before debugging the Node.js application.

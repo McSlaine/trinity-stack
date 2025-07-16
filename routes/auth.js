@@ -74,6 +74,22 @@ router.get('/auth/session-check', (req, res) => {
     });
 });
 
+// Debug Redis sessions
+router.get('/auth/redis-check', asyncHandler(async (req, res) => {
+    if (!req.session) {
+        return res.json({ error: 'No session middleware' });
+    }
+    
+    const sessionInfo = {
+        currentSessionID: req.sessionID,
+        currentSessionData: req.session,
+        cookieSettings: req.session.cookie,
+        hasState: !!req.session.state
+    };
+    
+    res.json(sessionInfo);
+}));
+
 // Redirect user to MYOB for authentication
 router.get('/auth/myob', (req, res) => {
     const state = crypto.randomBytes(16).toString('hex');
@@ -161,11 +177,39 @@ router.get('/auth/callback', asyncHandler(async (req, res) => {
     console.log('OAuth callback received:', {
         code: req.query.code?.substring(0, 20) + '...',
         state: req.query.state,
-        sessionState: req.session.state
+        sessionState: req.session.state,
+        sessionID: req.sessionID,
+        sessionExists: !!req.session,
+        cookieHeader: req.headers.cookie
     });
 
+    // Debug session issues
+    if (!req.session) {
+        console.error('No session object available!');
+        return res.status(500).send('Session not initialized. Please try logging in again.');
+    }
+
     if (req.query.state !== req.session.state) {
-        return res.status(400).send('Invalid state parameter');
+        console.error('State mismatch:', {
+            queryState: req.query.state,
+            sessionState: req.session.state,
+            sessionID: req.sessionID
+        });
+        return res.status(400).send(`
+            <h1>Session State Mismatch</h1>
+            <p>The OAuth state parameter doesn't match your session. This usually happens when:</p>
+            <ul>
+                <li>Cookies are blocked or not persisting</li>
+                <li>You clicked back/forward during login</li>
+                <li>Your session expired</li>
+                <li>You're using multiple tabs</li>
+            </ul>
+            <p><a href="/auth/login">Try logging in again</a></p>
+            <details>
+                <summary>Debug Info</summary>
+                <pre>Query State: ${req.query.state}\nSession State: ${req.session.state || 'undefined'}\nSession ID: ${req.sessionID}</pre>
+            </details>
+        `);
     }
 
     const { code } = req.query;
@@ -256,28 +300,8 @@ router.get('/auth/callback', asyncHandler(async (req, res) => {
             console.error('4. The client credentials are wrong');
         }
         
-        // Check if this is an Ory intercepted request
-        if (code.startsWith('ory_ac_')) {
-            return res.status(500).send(`
-                <h1>OAuth Flow Intercepted by Ory</h1>
-                <p>The authorization code starts with "ory_ac_" which indicates your OAuth flow is being intercepted by Ory instead of going to MYOB.</p>
-                <h2>Possible causes:</h2>
-                <ul>
-                    <li>Browser extension (like Ory Session Manager)</li>
-                    <li>Local proxy or VPN intercepting requests</li>
-                    <li>DNS resolution issues</li>
-                    <li>Hosts file entries redirecting secure.myob.com</li>
-                </ul>
-                <h2>To fix:</h2>
-                <ol>
-                    <li>Disable all browser extensions and try again</li>
-                    <li>Try in an incognito/private browser window</li>
-                    <li>Check your hosts file for any MYOB entries</li>
-                    <li>Disable any local proxies or VPNs</li>
-                </ol>
-                <p><a href="/auth/login">Try logging in again</a></p>
-            `);
-        }
+        // Note: MYOB now uses Ory for authentication, so ory_ac_ prefixed codes are expected
+        console.log('Note: MYOB uses Ory for OAuth as part of their Secure Invoicing system');
         
         return res.status(500).send('Authentication failed. Check server logs for details.');
     }
