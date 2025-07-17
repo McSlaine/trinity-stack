@@ -1,0 +1,6 @@
+trinity.log
+__pycache__/
+*.pid
+*.log
+.pm2/
+.env
