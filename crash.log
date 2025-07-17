@@ -1,0 +1,138 @@
+Server is running on port 3000
+Token store initialized
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] --- Starting Full Data Sync ---
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 178 Accounts.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=4000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 4003 Invoices.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1903 Bills.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 946 Customers.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1126 Suppliers.
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] CRITICAL SYNC ERROR: column "id" does not exist
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Failed to write sync failure status to DB: column "id" does not exist
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] --- Starting Full Data Sync ---
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 178 Accounts.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=4000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 4003 Invoices.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1903 Bills.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 946 Customers.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1126 Suppliers.
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] CRITICAL SYNC ERROR: column "id" does not exist
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Failed to write sync failure status to DB: column "id" does not exist
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] --- Starting Full Data Sync ---
+MYOB API request to https://api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/GeneralLedger/Account failed: {
+  Errors: [
+    {
+      Name: 'OAuthTokenIsInvalid',
+      Message: 'The supplied OAuth token (Bearer) is not valid',
+      AdditionalDetails: 'Header',
+      ErrorCode: 31001,
+      Severity: 'Error',
+      LearnMore: null
+    }
+  ],
+  Information: 'Warning, error messages have not been finalised in this release and may change'
+}
+Access token expired, attempting refresh...
+Token refreshed successfully.
+Token refreshed, retrying original request to: https://api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/GeneralLedger/Account
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 178 Accounts.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=4000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 4003 Invoices.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1903 Bills.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 946 Customers.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1126 Suppliers.
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] CRITICAL SYNC ERROR: column "id" does not exist
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Failed to write sync failure status to DB: column "id" does not exist
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] --- Starting Full Data Sync ---
+MYOB API request to https://api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/GeneralLedger/Account failed: {
+  Errors: [
+    {
+      Name: 'OAuthTokenIsInvalid',
+      Message: 'The supplied OAuth token (Bearer) is not valid',
+      AdditionalDetails: 'Header',
+      ErrorCode: 31001,
+      Severity: 'Error',
+      LearnMore: null
+    }
+  ],
+  Information: 'Warning, error messages have not been finalised in this release and may change'
+}
+Access token expired, attempting refresh...
+Token refreshed successfully.
+Token refreshed, retrying original request to: https://api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/GeneralLedger/Account
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 178 Accounts.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=2800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=3600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Sale/Invoice?$top=400&$skip=4000&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 4003 Invoices.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=400&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=800&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1200&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Purchase/Bill?$top=400&$skip=1600&$filter=Status%20eq%20%27Open%27%20or%20Status%20eq%20%27Closed%27
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1903 Bills.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Customer?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 946 Customers.
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=400
+[Pagination] Fetching next page: https://arl2.api.myob.com/accountright/34a49939-30cd-4e55-b1fe-0ce193bf472b/Contact/Supplier?$top=400&$skip=800
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Fetched 1126 Suppliers.
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] CRITICAL SYNC ERROR: column "id" does not exist
+[34a49939-30cd-4e55-b1fe-0ce193bf472b] Failed to write sync failure status to DB: column "id" does not exist
