@@ -1,8 +1,5 @@
-node_modules
-.env
-npm-debug.log
-server.out
-tokenStore/
-.vscode/
-server.log
+trinity.log
+*.pid
 *.log
+.pm2/
+__pycache__/

@@ -1,5 +1,29 @@
 # Project: Cashflow Trends AI
 
+## 🚨 CRITICAL: PRODUCTION HARDENING REQUIREMENTS 🚨
+
+**BEFORE ANY CODE CHANGES: READ PRODUCTION_HARDENING.md**
+
+**GOLDEN RULE: "If it has a security workaround, it doesn't belong in production."**
+
+**NEVER apply these development shortcuts:**
+- ❌ `rejectUnauthorized: false` in SSL configurations  
+- ❌ `http://` URLs in OAuth redirect URIs (MYOB requires HTTPS)
+- ❌ `localhost` in production configurations
+- ❌ Self-signed certificates for external APIs
+- ❌ Disabled SSL verification
+
+**ALWAYS:**
+- ✅ Use proper SSL certificates via Let's Encrypt
+- ✅ Configure HTTPS with Nginx reverse proxy
+- ✅ Use `https://cashflowtrends.ai/auth/callback` for MYOB OAuth
+- ✅ Verify `NODE_ENV=production` settings
+- ✅ Test the complete OAuth flow end-to-end
+
+**Read PRODUCTION_HARDENING.md for complete setup instructions.**
+
+---
+
 **Goal:** Product Overview: Cashflow AI
 ---------------------------------
 Cashflow AI is a SaaS platform that leverages advanced artificial intelligence 

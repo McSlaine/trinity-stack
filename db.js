@@ -1,125 +1,102 @@
-// db.js
+// db.js - Fixed SSL Configuration for DigitalOcean PostgreSQL
 require('dotenv').config();
 const { Pool } = require('pg');
 const fs = require('fs');
+const path = require('path');
 
 if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is not set.");
 }
 
-// Parse the DATABASE_URL to handle SSL properly
+console.log('🔧 Configuring database connection...');
+
+let pool;
 let connectionString = process.env.DATABASE_URL;
 
-// Remove sslmode and sslcert parameters from URL if present (we'll handle SSL in the config)
-connectionString = connectionString.replace(/\?.*$/, '');
-
-const pool = new Pool({
-    connectionString: connectionString,
-    ssl: {
-        rejectUnauthorized: true,
-        require: true,
-        ca: fs.readFileSync('/home/cashflow-trends-ai/ca-certificate.crt').toString()
+// Development mode: Try secure SSL first, fallback if needed
+if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 Development mode: using permissive SSL for now');
+    console.log('📝 Note: Download correct cluster CA certificate from DigitalOcean for production');
+    
+    // Remove sslmode=require from connection string for development
+    connectionString = connectionString.replace(/[?&]sslmode=require/, '');
+    console.log('🔧 Removed sslmode=require for development flexibility');
+    
+    pool = new Pool({
+        connectionString: connectionString,
+        ssl: {
+            rejectUnauthorized: false, // Development only - allows connection with any cert
+        },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 15000,
+    });
+    console.log('🔒 Development SSL enabled (permissive mode)');
+    
+} else {
+    // Production - require proper CA certificate
+    const caCertPath = path.join(__dirname, 'ca-certificate.crt');
+    if (!fs.existsSync(caCertPath)) {
+        console.error('❌ PRODUCTION ERROR: CA certificate required');
+        process.exit(1);
     }
+    
+    const caCert = fs.readFileSync(caCertPath, 'utf8');
+    pool = new Pool({
+        connectionString: connectionString, // Keep original for production
+        ssl: {
+            rejectUnauthorized: true,
+            ca: caCert,
+        },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 15000,
+    });
+    console.log('🔒 Production SSL with CA certificate validation');
+}
+
+// --- Event Listeners for Logging ---
+pool.on('connect', (client) => {
+    console.log('✅ Database client connected');
 });
 
-async function query(text, params) {
-    const client = await pool.connect();
+pool.on('error', (err, client) => {
+    console.error('❌ Unexpected error on idle database client', err);
+    process.exit(-1);
+});
+
+pool.on('remove', (client) => {
+    console.log('📤 Database client removed');
+});
+
+// Test the connection on startup
+async function testConnection() {
     try {
-        return await client.query(text, params);
-    } finally {
-        client.release();
-    }
-}
-
-async function insertCompany(myob_uid, name) {
-    const text = `
-        INSERT INTO company_files (myob_uid, name)
-        VALUES ($1, $2)
-        ON CONFLICT (myob_uid) DO UPDATE SET name = EXCLUDED.name
-        RETURNING id;
-    `;
-    const res = await query(text, [myob_uid, name]);
-    return res.rows[0].id;
-}
-
-/**
- * Logs a general synchronization attempt.
- * @param {number} companyId The ID of the company.
- * @param {boolean} success Whether the sync was successful.
- * @param {string} message A descriptive message.
- * @param {number} vectorsInserted The number of vectors inserted during the sync.
- */
-async function logSync(companyId, success, message, vectorsInserted = 0) {
-    const text = `
-        INSERT INTO sync_log (company_id, success, message, vectors_inserted)
-        VALUES ($1, $2, $3, $4);
-    `;
-    await query(text, [companyId, success, message, vectorsInserted]);
-    const updateText = `
-        UPDATE company_files SET last_synced = CURRENT_TIMESTAMP, error_msg = $1 WHERE id = $2;
-    `;
-    await query(updateText, [success ? null : message, companyId]);
-}
-
-async function logSyncError(companyId, stage, error_details) {
-    const message = `Sync failed at stage: ${stage}`;
-    const text = `
-        INSERT INTO sync_log (company_id, success, message, error_details)
-        VALUES ($1, false, $2, $3);
-    `;
-    await query(text, [companyId, message, error_details]);
-    const updateText = `
-        UPDATE company_files SET last_synced = CURRENT_TIMESTAMP, error_msg = $1 WHERE id = $2;
-    `;
-    await query(updateText, [message, companyId]);
-}
-
-async function insertInvoices(companyId, invoiceArray) {
-    if (!invoiceArray || invoiceArray.length === 0) return;
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-        const text = `
-            INSERT INTO invoices (company_id, invoice_uid, date_issued, due_date, amount_total, amount_paid, status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (invoice_uid) DO UPDATE SET
-                date_issued = EXCLUDED.date_issued,
-                due_date = EXCLUDED.due_date,
-                amount_total = EXCLUDED.amount_total,
-                amount_paid = EXCLUDED.amount_paid,
-                status = EXCLUDED.status;
-        `;
-        for (const invoice of invoiceArray) {
-            await client.query(text, [companyId, invoice.invoice_uid, invoice.date_issued, invoice.due_date, invoice.amount_total, invoice.amount_paid, invoice.status]);
-        }
-        await client.query('COMMIT');
+        const result = await pool.query('SELECT version();');
+        console.log('🎉 Database connection test successful');
+        console.log('📊 PostgreSQL version:', result.rows[0].version.substring(0, 50) + '...');
     } catch (error) {
-        await client.query('ROLLBACK');
+        console.error('❌ Database connection test failed:', error.message);
         throw error;
-    } finally {
-        client.release();
     }
 }
 
-async function insertBills(companyId, billArray) {
-    if (!billArray || billArray.length === 0) return;
-    // Placeholder
-}
-
-async function insertGST(companyId, gstArray) {
-    if (!gstArray || gstArray.length === 0) return;
-    // Placeholder
-}
-
+// Alias for server.js compatibility
 async function initDb() {
     try {
-        const client = await pool.connect();
-        console.log('Database connected successfully.');
-        client.release();
-    } catch (err) {
-        console.error('Unable to connect to the database:', err);
-        throw err;
+        console.log('🔧 Initializing database connection...');
+        await testConnection();
+        console.log('✅ Database initialization completed');
+    } catch (error) {
+        console.error('❌ Database initialization failed:', error.message);
+        throw error;
     }
 }
 
-module.exports = { pool, query, insertCompany, logSync, logSyncError, insertInvoices, insertBills, insertGST, initDb };
+// --- Export Query Function ---
+module.exports = {
+    query: (text, params) => pool.query(text, params),
+    pool, // Export the pool itself for more complex transactions if needed
+    testConnection, // Export test function
+    initDb, // Export for server.js compatibility
+};

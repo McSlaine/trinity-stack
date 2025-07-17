@@ -1,0 +1,44 @@
+
+ ██████╗ ███████╗███╗   ███╗██╗███╗   ██╗██╗     ██████╗██╗     ██╗
+██╔════╝ ██╔════╝████╗ ████║██║████╗  ██║██║    ██╔════╝██║     ██║
+██║  ███╗█████╗  ██╔████╔██║██║██╔██╗ ██║██║    ██║     ██║     ██║
+██║   ██║██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║██║    ██║     ██║     ██║
+╚██████╔╝███████╗██║ ╚═╝ ██║██║██║ ╚████║██║    ╚██████╗███████╗██║
+ ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝     ╚═════╝╚══════╝╚═╝
+    
+Trinity Stack Executor Agent
+Role: Execute commands, validate endpoints, restart servers
+Type 'exit' to quit or enter shell commands to execute
+Commands will be logged to trinity.log
+
+🔄 Executing pre-queued sync investigation commands:
+
+[1] Executing: pwd && echo 'Gemini CLI operational'
+✅ Success: /home/cashflow-trends-ai
+Gemini CLI operational
+
+[2] Executing: pm2 list | grep cashflow || echo 'No PM2 processes found'
+✅ Success: │ [1m[36m0[39m[22m  │ cashflow-ai-dev    │ default     │ 1.0.0   │ [7m[1mfork[22m[27m    │ N/A      │ 0      │ 3002 │ [31m[1mstopped[22m[39m   │ 0%       │ 0b       │ [1mroot[22m     │ [90mdisabled[39m │
+
+[3] Executing: curl -f http://localhost:3000/health 2>/dev/null || echo 'Health check failed'
+✅ Success: Health check failed
+
+[4] Executing: ps aux | grep node | grep -v grep || echo 'No Node processes found'
+✅ Success: root        1352  0.0  1.1 990652 47820 ?        Sl   07:10   0:00 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node /root/.cursor-server/bin/multiplex-server/45e440a0fc5a5d12380c7a83a49ab82c55f715a5d60292da31f8d75730a9ee15.js 73fb59f1-5633-48bc-886a-6dfc7fb78414
+root        1386  0.2  2.5 11813868 101984 ?     Sl   07:10   0:17 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/out/server-main.js --start-server --host=127.0.0.1 --port 0 --connection-token-file /run/user/0/cursor-remote-code.token.6ca0869f6193ac0d40fa6ae74ed01260 --telemetry-level off --enable-remote-auto-shutdown --accept-server-license-terms
+root        1439  7.9  8.6 75870540 345724 ?     Sl   07:10   9:23 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node --dns-result-order=ipv4first /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/out/bootstrap-fork --type=extensionHost --transformURIs --useHostProxy=false
+root        1450  0.0  1.5 11792260 63272 ?      Sl   07:10   0:04 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/out/bootstrap-fork --type=fileWatcher
+root        1465  0.3  1.9 11827568 77496 ?      Sl   07:10   0:27 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/out/bootstrap-fork --type=ptyHost --logsPath /root/.cursor-server/data/logs/20250717T071033
+root        1530  0.7  7.5 1786484 302668 ?      Sl   07:10   0:50 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node --max-old-space-size=3072 /root/.cursor-server/extensions/anysphere.cursorpyright-1.0.5/dist/server.js --cancellationReceive=file:5a1f4405d97835a27abf1dc40112b489fc8af8cebd --node-ipc --clientProcessId=1439
+root        1716  0.0  1.3 994560 53460 ?        Sl   07:10   0:00 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/extensions/json-language-features/server/dist/node/jsonServerMain --node-ipc --clientProcessId=1439
+root       10944  0.0  1.6 1008136 65796 ?       Sl   07:59   0:00 /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/node /root/.cursor-server/bin/a8e95743c5268be73767c46944a71f4465d05c90/extensions/markdown-language-features/dist/serverWorkerMain --node-ipc --clientProcessId=1439
+
+🎯 Interactive mode - Enter commands or 'exit' to quit:
+Gemini> Executing: [B
+Error: /bin/sh: 1: [B: not found
+
+Gemini> Gemini> Executing: oig
+Error: /bin/sh: 1: oig: not found
+
+Gemini> 
+Goodbye!

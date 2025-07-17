@@ -1,0 +1,25 @@
+TRINITY STACK CONSULTATION REQUEST - Cashflow Dashboard Sync Issue
+
+Problem: Dashboard stuck in "Syncing Data..." state, never displays financial data.
+
+Context from ISSUE_ESCALATION.md:
+- Previous debugging attempts failed and were reverted
+- Backend appears to provide data but frontend won't render
+- Suspected issues: API timeouts, frontend parsing errors, race conditions
+- Fake data seeding still didn't work, indicating frontend rendering issue
+
+Investigation Options:
+1. API Endpoint Validation: Test /api/dashboard-summary/:companyFileId endpoints
+2. Frontend Data Parsing: Debug company-file.js loadDashboard() function  
+3. Sync Process Health: Verify sync completion vs detection issue
+4. Database Layer: Check if data is actually being stored post-sync
+
+Question: What investigation sequence would you recommend for highest success probability?
+
+Current system status:
+- Node.js server running via PM2
+- PostgreSQL database connected
+- MYOB OAuth integration working
+- Frontend gets stuck in loading state
+
+Request: Please provide strategic approach with reasoning for investigation order. 

@@ -15,6 +15,53 @@ router.use(requireSessionAuth);
 // Ensure MYOB token is fresh
 router.use(ensureFreshToken);
 
+// Get sync status for a specific company
+router.get('/status/:companyFileId', asyncHandler(async (req, res) => {
+    const { companyFileId } = req.params;
+    
+    try {
+        const { rows } = await query(
+            'SELECT * FROM sync_progress WHERE company_file_id = $1',
+            [companyFileId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ 
+                error: 'No sync progress found',
+                status: 'idle',
+                processed_items: 0,
+                total_items: 0,
+                details: 'No sync in progress'
+            });
+        }
+
+        const progress = rows[0];
+        
+        // Calculate percentage
+        const percentage = progress.total_items > 0 
+            ? Math.round((progress.processed_items / progress.total_items) * 100)
+            : 0;
+
+        res.json({
+            status: progress.status,
+            processed_items: progress.processed_items || 0,
+            total_items: progress.total_items || 0,
+            percentage,
+            details: progress.details || 'Processing...',
+            last_updated: progress.last_updated,
+            error: progress.status === 'Failed' ? progress.details : null
+        });
+
+    } catch (error) {
+        console.error('Error fetching sync status:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch sync status',
+            status: 'error',
+            details: error.message 
+        });
+    }
+}));
+
 // Original route - kept for backward compatibility
 router.post('/', asyncHandler(async (req, res, next) => {
   console.log('--- SYNC INITIATED ---');
@@ -98,100 +145,117 @@ router.post('/:companyFileId', asyncHandler(async (req, res, next) => {
     // Fetch bills and invoices using myobAdapter with date filtering
     console.log(`Fetching bills from MYOB (from ${startDate} to ${endDate})...`);
     const bills = await myobAdapter.fetchBills(companyFileId, startDate, endDate);
-    console.log(`Fetched ${bills.length} bills`);
 
     console.log(`Fetching invoices from MYOB (from ${startDate} to ${endDate})...`);
     const invoices = await myobAdapter.fetchInvoices(companyFileId, startDate, endDate);
-    console.log(`Fetched ${invoices.length} invoices`);
 
-    const itemsToSync = [...bills, ...invoices];
-    const totalItems = itemsToSync.length;
-
-    // Update total items count
+    const totalItems = bills.length + invoices.length;
+    
+    // Update progress with total items
     await query(`
       UPDATE sync_progress 
       SET total_items = $2,
-          details = 'Processing and vectorizing data...',
+          details = 'Processing and storing data...',
           last_updated = CURRENT_TIMESTAMP
       WHERE company_file_id = $1
     `, [companyFileId, totalItems]);
 
-    // Process each item and push to vector DB
-    let processedCount = 0;
-    let vectorsInserted = 0;
+    let processed = 0;
 
-    for (const item of itemsToSync) {
+    // Insert bills
+    for (const bill of bills) {
       try {
-        // Create descriptive text for the vector embedding
-        const original_text = `${item.type || 'Unknown'} ${item.Number || ''} for ${item.Customer?.CompanyName || item.Supplier?.CompanyName || 'Unknown'} - ${item.Description || ''} of ${item.TotalAmount || item.Amount || 0} due on ${item.DueDate || 'Unknown'}`;
-
-        const metadata = {
-          id: item.UID,
-          type: item.type || (item.Customer ? 'invoice' : 'bill'),
-          date: item.Date || item.DateOccurred,
-          dueDate: item.DueDate,
-          amount: item.TotalAmount || item.Amount || 0,
-          status: item.Status || 'unknown',
-          original_text: original_text,
-          number: item.Number,
-          companyFileId: companyFileId
-        };
-
-        // Push to Pinecone
-        await vector.pushToVectorDB(original_text, metadata);
-        vectorsInserted++;
-        console.log(`Pushed ${metadata.type} ${item.UID} to Pinecone`);
-      } catch (err) {
-        console.error(`Failed to vectorize item ${item.UID}:`, err);
-      }
-
-      processedCount++;
-
-      // Update progress every 10 items or on last item
-      if (processedCount % 10 === 0 || processedCount === totalItems) {
         await query(`
-          UPDATE sync_progress 
-          SET processed_items = $2,
-              last_updated = CURRENT_TIMESTAMP
-          WHERE company_file_id = $1
-        `, [companyFileId, processedCount]);
+          INSERT INTO bills (company_id, bill_uid, number, date_issued, due_date, amount, raw_data) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          ON CONFLICT (bill_uid) 
+          DO UPDATE SET amount = $6, raw_data = $7
+        `, [
+          companyFileId,
+          bill.UID,
+          bill.Number,
+          bill.Date,
+          bill.Date, // Using same date for due_date if not available
+          bill.TotalAmount || 0,
+          JSON.stringify(bill)
+        ]);
+        
+        processed++;
+        
+        // Update progress every 10 items
+        if (processed % 10 === 0) {
+          await query(`
+            UPDATE sync_progress 
+            SET processed_items = $2,
+                details = 'Processing bills... ($2/$3)',
+                last_updated = CURRENT_TIMESTAMP
+            WHERE company_file_id = $1
+          `, [companyFileId, processed, totalItems]);
+        }
+      } catch (billError) {
+        console.error(`Error inserting bill ${bill.UID}:`, billError);
       }
     }
 
-    // Log sync completion
-    await query(`
-      INSERT INTO sync_log (company_id, success, message, vectors_inserted)
-      VALUES ($1, true, $2, $3)
-    `, [companyFileId, `Sync completed successfully. Processed ${processedCount} items.`, vectorsInserted]);
+    // Insert invoices
+    for (const invoice of invoices) {
+      try {
+        await query(`
+          INSERT INTO invoices (company_id, invoice_uid, number, date_issued, due_date, amount_total, amount_paid, status, raw_data) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          ON CONFLICT (invoice_uid) 
+          DO UPDATE SET amount_total = $6, amount_paid = $7, status = $8, raw_data = $9
+        `, [
+          companyFileId,
+          invoice.UID,
+          invoice.Number,
+          invoice.Date,
+          invoice.Date, // Using same date for due_date if not available
+          invoice.TotalAmount || 0,
+          invoice.TotalPaid || 0,
+          invoice.Status || 'Open',
+          JSON.stringify(invoice)
+        ]);
+        
+        processed++;
+        
+        // Update progress every 10 items
+        if (processed % 10 === 0) {
+          await query(`
+            UPDATE sync_progress 
+            SET processed_items = $2,
+                details = 'Processing invoices... ($2/$3)',
+                last_updated = CURRENT_TIMESTAMP
+            WHERE company_file_id = $1
+          `, [companyFileId, processed, totalItems]);
+        }
+      } catch (invoiceError) {
+        console.error(`Error inserting invoice ${invoice.UID}:`, invoiceError);
+      }
+    }
 
-    // Update sync progress to completed
+    // Final progress update
     await query(`
       UPDATE sync_progress 
-      SET status = 'Completed',
-          processed_items = $2,
-          total_items = $2,
-          details = $3,
+      SET processed_items = $2,
+          status = 'Completed',
+          details = 'Sync completed successfully',
           last_updated = CURRENT_TIMESTAMP
       WHERE company_file_id = $1
-    `, [companyFileId, processedCount, `Sync completed. ${vectorsInserted} vectors created.`]);
+    `, [companyFileId, processed]);
 
+    console.log(`✅ Sync completed: ${processed} items processed`);
     res.json({ 
-      message: 'Sync successful', 
-      totalItems: totalItems,
-      processedItems: processedCount,
-      vectorsInserted: vectorsInserted
+      message: 'Sync completed successfully', 
+      itemsProcessed: processed,
+      bills: bills.length,
+      invoices: invoices.length
     });
 
   } catch (err) {
-    console.error(' MYOB Sync Error:', err.response?.data || err.message);
+    console.error('❌ Sync Error:', err.response?.data || err.message);
     
-    // Log sync error
-    await query(`
-      INSERT INTO sync_log (company_id, success, message, error_details)
-      VALUES ($1, false, 'Sync failed', $2)
-    `, [companyFileId, err.message]);
-    
-    // Update sync progress to failed
+    // Update progress with error
     await query(`
       UPDATE sync_progress 
       SET status = 'Failed',
@@ -201,27 +265,6 @@ router.post('/:companyFileId', asyncHandler(async (req, res, next) => {
     `, [companyFileId, err.message]);
     
     next(err);
-  }
-}));
-
-// Get sync status endpoint
-router.get('/status/:companyFileId', asyncHandler(async (req, res) => {
-  const { companyFileId } = req.params;
-  
-  try {
-    const result = await query(
-      'SELECT * FROM sync_progress WHERE company_file_id = $1',
-      [companyFileId]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Sync status not found for this company' });
-    }
-    
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error('Error fetching sync status:', err);
-    res.status(500).json({ error: 'Internal server error' });
   }
 }));
 

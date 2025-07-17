@@ -4,18 +4,328 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Cashflow AI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="css/company-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-        .card { display: flex; flex-direction: column; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .card-title { font-weight: bold; font-size: 1.1rem; }
-        .card-main-value { font-size: 2rem; font-weight: bold; margin: 5px 0; }
-        .card-sub-text { color: #6c757d; font-size: 0.9rem; }
-        .list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
-        .list-item:last-child { border-bottom: none; }
-        .chart-placeholder { height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 4px; margin-top: 10px; }
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --bg-primary: #f8fafc;
+            --bg-white: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .dashboard-grid.hero {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            margin-bottom: 40px;
+        }
+
+        .card { 
+            background: var(--bg-white);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        
+        .card-title { 
+            font-weight: 600; 
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--primary-color);
+        }
+        
+        .card-main-value { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            margin: 8px 0 4px 0;
+            color: var(--primary-color);
+        }
+
+        .card-main-value.success { color: var(--success-color); }
+        .card-main-value.warning { color: var(--warning-color); }
+        .card-main-value.danger { color: var(--danger-color); }
+        
+        .card-sub-text { 
+            color: var(--text-secondary); 
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 12px 0; 
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .list-item:last-child { 
+            border-bottom: none; 
+        }
+
+        .list-item strong {
+            font-weight: 600;
+        }
+
+        .chart-container { 
+            height: 200px; 
+            margin-top: 16px; 
+            position: relative;
+        }
+
+        .chart-placeholder {
+            height: 120px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            margin-top: 16px;
+            border: 2px dashed var(--border-color);
+            font-weight: 500;
+        }
+
+        .metric-card {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+        }
+
+        .metric-card .card-main-value {
+            color: white;
+            text-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+        }
+
+        .metric-card .card-sub-text {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .status-badge.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .insights-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .insights-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .insight-item i {
+            color: var(--primary-color);
+            margin-top: 2px;
+        }
+
+        /* Header enhancements */
+        header {
+            background: var(--bg-white);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.875rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .sync-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sync-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        /* Loading and progress styles */
+        .progress-container {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Chat interface enhancements */
+        .chat-container {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .chat-container h2 {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);
+            color: white;
+            margin: -24px -24px 20px -24px;
+            padding: 16px 24px;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .card-main-value {
+                font-size: 2rem;
+            }
+            
+            header .container {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -23,93 +333,224 @@
         <div class="container">
             <h1 id="company-name">Company Dashboard</h1>
             <div class="header-actions">
-                <a href="/company-selection.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to File List</a>
-                <button id="sync-btn" class="sync-button"><i class="fas fa-sync"></i> Sync Now</button>
+                <a href="/company-selection.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to File List
+                </a>
+                <button id="sync-btn" class="sync-button">
+                    <i class="fas fa-sync"></i> Sync Now
+                </button>
             </div>
         </div>
     </header>
 
     <main class="container">
-        <section id="chat-interface" class="chat-container card" style="display: none; margin-bottom: 20px;">
-            <h2><i class="fas fa-robot"></i> AI Assistant</h2>
+        <!-- AI Chat Interface -->
+        <section id="chat-interface" class="chat-container card" style="display: none; margin-bottom: 32px;">
+            <h2><i class="fas fa-robot"></i> AI Financial Assistant</h2>
             <div id="chat-messages" class="chat-messages"></div>
             <form id="chat-form" class="chat-form">
-                <input type="text" id="chat-input" placeholder="Ask about this company..." autocomplete="off">
+                <input type="text" id="chat-input" placeholder="Ask about your financial data..." autocomplete="off">
                 <button type="submit">Send</button>
             </form>
             <div id="chat-loader" class="loader" style="display: none;"></div>
             <div id="chat-error" class="error"></div>
         </section>
 
-        <div id="progress-container" style="display: none;">
-            <!-- Sync status will be dynamically inserted here -->
+        <!-- Progress Container -->
+        <div id="progress-container" class="progress-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Loading your financial dashboard...</p>
         </div>
 
+        <!-- Main Dashboard Content -->
         <div id="main-content" style="display: none;">
+            <!-- Key Metrics Hero Section -->
+            <div class="dashboard-grid hero">
+                <!-- Net Cash Flow -->
+                <div class="card metric-card">
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-chart-line"></i> Net Cash Flow</p>
+                    </div>
+                    <p class="card-main-value" id="net-cash-flow">$0.00</p>
+                    <p class="card-sub-text">Last 30 days</p>
+                </div>
+
+                <!-- Total Revenue -->
+                <div class="card">
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-dollar-sign"></i> Revenue</p>
+                        <span class="status-badge success"><i class="fas fa-arrow-up"></i> Active</span>
+                    </div>
+                    <p class="card-main-value success" id="income-total">$0.00</p>
+                    <p class="card-sub-text">Last 3 months</p>
+                    <div class="chart-container">
+                        <canvas id="income-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Total Expenses -->
+                <div class="card">
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-credit-card"></i> Expenses</p>
+                        <span class="status-badge warning"><i class="fas fa-exclamation-triangle"></i> Monitor</span>
+                    </div>
+                    <p class="card-main-value danger" id="expenses-total">$0.00</p>
+                    <p class="card-sub-text">Last 3 months</p>
+                    <div class="chart-container">
+                        <canvas id="expenses-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Metrics -->
             <div class="dashboard-grid">
                 <!-- Up Next -->
                 <div class="card">
-                    <div class="card-header"><p class="card-title">Up next</p></div>
-                    <div class="list-item"><span>Overdue invoices</span> <span id="overdue-invoices-count">0</span></div>
-                    <div class="list-item"><span>Overdue bills</span> <span id="overdue-bills-count">0</span></div>
-                </div>
-
-                <!-- Your Business: Income -->
-                <div class="card">
-                    <div class="card-header"><p class="card-title">Income</p></div>
-                    <p class="card-main-value" id="income-total">$0.00</p>
-                    <p class="card-sub-text">last 3 months</p>
-                    <div class="chart-placeholder">3-Month Chart</div>
-                </div>
-
-                <!-- Your Business: Expenses -->
-                <div class="card">
-                    <div class="card-header"><p class="card-title">Expenses</p></div>
-                    <p class="card-main-value" id="expenses-total" style="color: #dc3545;">$0.00</p>
-                    <p class="card-sub-text">last 3 months</p>
-                    <div class="chart-placeholder">3-Month Chart</div>
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-clock"></i> Up Next</p>
+                    </div>
+                    <div class="list-item">
+                        <span>Overdue invoices</span> 
+                        <span class="status-badge danger" id="overdue-invoices-count">0</span>
+                    </div>
+                    <div class="list-item">
+                        <span>Overdue bills</span> 
+                        <span class="status-badge warning" id="overdue-bills-count">0</span>
+                    </div>
+                    <div class="insights-section">
+                        <div class="insights-title">
+                            <i class="fas fa-lightbulb"></i> Quick Actions
+                        </div>
+                        <div class="insight-item">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Send payment reminders to overdue customers</span>
+                        </div>
+                        <div class="insight-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Review upcoming bill payments</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Financial Position -->
                 <div class="card">
-                    <div class="card-header"><p class="card-title">Financial position</p></div>
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-balance-scale"></i> Financial Position</p>
+                    </div>
                     <p class="card-main-value" id="net-profit-fy">$0.00</p>
-                    <p class="card-sub-text">this financial year</p>
-                    <div class="list-item"><span>Income</span><span id="income-fy">$0.00</span></div>
-                    <div class="list-item"><span>Expenses</span><span id="expenses-fy">$0.00</span></div>
+                    <p class="card-sub-text">This financial year</p>
+                    <div class="list-item">
+                        <span>Income</span>
+                        <strong id="income-fy">$0.00</strong>
+                    </div>
+                    <div class="list-item">
+                        <span>Expenses</span>
+                        <strong id="expenses-fy">$0.00</strong>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="profit-chart"></canvas>
+                    </div>
                 </div>
 
-                <!-- Accounts -->
+                <!-- Bank Balance -->
                 <div class="card">
-                    <div class="card-header"><p class="card-title">Bank balance</p></div>
-                    <div id="bank-accounts-list"></div>
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-university"></i> Bank Balance</p>
+                    </div>
+                    <div id="bank-accounts-list">
+                        <div class="list-item">
+                            <span>Primary Account</span>
+                            <strong>$0.00</strong>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- GST -->
+                <!-- GST Overview -->
                 <div class="card">
-                    <div class="card-header"><p class="card-title">GST</p></div>
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-receipt"></i> GST Overview</p>
+                    </div>
                     <p class="card-main-value" id="gst-to-pay">$0.00</p>
-                    <p class="card-sub-text">to pay</p>
-                    <div class="list-item"><span>GST collected</span> <span id="gst-collected">$0.00</span></div>
-                    <div class="list-item"><span>GST paid</span> <span id="gst-paid">$0.00</span></div>
+                    <p class="card-sub-text">To pay this quarter</p>
+                    <div class="list-item">
+                        <span>GST collected</span> 
+                        <span id="gst-collected">$0.00</span>
+                    </div>
+                    <div class="list-item">
+                        <span>GST paid</span> 
+                        <span id="gst-paid">$0.00</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="gst-chart"></canvas>
+                    </div>
                 </div>
                 
-                <!-- Overdue Invoices -->
+                <!-- Overdue Invoices Detail -->
                 <div class="card">
-                     <div class="card-header"><p class="card-title">Overdue Invoices</p></div>
-                     <p class="card-main-value" id="overdue-invoices-total">$0.00</p>
-                     <p class="card-sub-text">total overdue</p>
-                     <div class="chart-placeholder">Overdue Breakdown Chart</div>
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-exclamation-circle"></i> Overdue Invoices</p>
+                    </div>
+                    <p class="card-main-value danger" id="overdue-invoices-total">$0.00</p>
+                    <p class="card-sub-text">Total overdue amount</p>
+                    <div class="insights-section">
+                        <div class="insights-title">
+                            <i class="fas fa-chart-pie"></i> Aging Analysis
+                        </div>
+                        <div class="insight-item">
+                            <i class="fas fa-circle" style="color: #ef4444;"></i>
+                            <span>30+ days: Track the oldest outstanding invoices</span>
+                        </div>
+                        <div class="insight-item">
+                            <i class="fas fa-circle" style="color: #f97316;"></i>
+                            <span>60+ days: Consider debt collection procedures</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Profit & Loss Summary -->
                 <div class="card">
-                    <div class="card-header"><p class="card-title">Profit & Loss</p> <span id="pnl-month" class="card-sub-text"></span></div>
+                    <div class="card-header">
+                        <p class="card-title"><i class="fas fa-chart-bar"></i> Profit & Loss</p> 
+                        <span id="pnl-month" class="card-sub-text"></span>
+                    </div>
                     <div id="profit-loss-summary">
-                        <div class="list-item"><span>Total Income</span> <span id="pnl-income">$0.00</span></div>
-                        <div class="list-item"><span>Cost of Sales</span> <span id="pnl-cost-of-sales">$0.00</span></div>
-                        <div class="list-item"><strong>Gross Profit</strong> <strong id="pnl-gross-profit">$0.00</strong></div>
-                        <div class="list-item"><span>Net Profit</span> <span id="pnl-net-profit">$0.00</span></div>
+                        <div class="list-item">
+                            <span>Total Income</span> 
+                            <span id="pnl-income">$0.00</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Cost of Sales</span> 
+                            <span id="pnl-cost-of-sales">$0.00</span>
+                        </div>
+                        <div class="list-item">
+                            <strong>Gross Profit</strong> 
+                            <strong id="pnl-gross-profit">$0.00</strong>
+                        </div>
+                        <div class="list-item">
+                            <span>Net Profit</span> 
+                            <span id="pnl-net-profit">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pnl-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Insights Section -->
+            <div class="card" style="margin-top: 32px;">
+                <div class="card-header">
+                    <p class="card-title"><i class="fas fa-brain"></i> AI Business Insights</p>
+                </div>
+                <div class="insights-section">
+                    <div class="insights-title">
+                        <i class="fas fa-lightbulb"></i> Recommendations
+                    </div>
+                    <div id="ai-insights">
+                        <div class="insight-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Your cash flow analysis is being prepared...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -117,6 +558,7 @@
     </main>
 
     <div id="error-message" class="error"></div>
+    <script src="error-handler.js"></script>
     <script src="chat.js"></script>
     <script src="sync-status.js"></script>
     <script src="company-file.js"></script>
